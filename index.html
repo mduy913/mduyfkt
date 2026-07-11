@@ -2,182 +2,107 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Làm người yêu anh nhé ❤️</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>❤️</title>
 
 <style>
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-font-family:Arial,sans-serif;
-}
-
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
 body{
-background:#ffdbe7;
+background:#ffd6e7;
 display:flex;
 justify-content:center;
 align-items:center;
 height:100vh;
 overflow:hidden;
 }
-
-.card{
-width:360px;
+.box{
+width:340px;
 background:#fff;
-padding:35px;
-border-radius:30px;
+padding:30px;
+border-radius:20px;
 text-align:center;
-box-shadow:0 10px 25px rgba(0,0,0,.15);
+box-shadow:0 10px 30px rgba(0,0,0,.15);
 }
-
 h1{
-font-size:35px;
-color:#ff5f7d;
+color:#ff4d6d;
 margin-bottom:20px;
 }
-
-p{
-font-size:20px;
-color:#666;
-margin-bottom:35px;
-line-height:1.5;
-}
-
 input{
 width:100%;
-padding:14px;
+padding:12px;
 font-size:18px;
-border-radius:12px;
-border:2px solid #ffd1dc;
+border:2px solid #ffc0cb;
+border-radius:10px;
 outline:none;
-margin-bottom:20px;
 }
-
-.startBtn{
-width:100%;
-padding:15px;
-border:none;
-border-radius:50px;
-background:#ff5f7d;
-color:white;
-font-size:22px;
-cursor:pointer;
-}
-
-#page2,
-#page3{
-display:none;
-}
-
-.buttons{
-position:relative;
-height:140px;
+.btn{
 margin-top:20px;
-}
-
-button{
-padding:15px 40px;
-font-size:24px;
+padding:12px 35px;
 border:none;
-border-radius:50px;
+border-radius:30px;
+font-size:18px;
+cursor:pointer;
 color:#fff;
-cursor:pointer;
-position:absolute;
 }
-
+.ok{background:#ff4d6d;}
+#ask{display:none;}
 #yes{
-left:20px;
-bottom:0;
 background:#2ecc71;
+position:absolute;
+left:30%;
+bottom:100px;
 }
-
 #no{
-right:20px;
-bottom:0;
 background:#ff4d6d;
-}
-
-.heart{
-font-size:80px;
-margin-top:20px;
-animation:beat .8s infinite;
-}
-
-@keyframes beat{
-50%{
-transform:scale(1.15);
-}
+position:absolute;
+left:55%;
+bottom:100px;
 }
 </style>
 </head>
 
 <body>
 
-<!-- Trang nhập tên -->
-<div class="card" id="page1">
-<h1>Xin chào 👋</h1>
+<div class="box" id="page1">
+<h1>Em tên gì? ❤️</h1>
 
-<p>Em tên là gì?</p>
+<input id="name" placeholder="Nhập tên...">
 
-<input id="name" placeholder="Nhập tên của em">
-
-<button class="startBtn" onclick="start()">Tiếp tục</button>
-
+<button class="btn ok" onclick="next()">OK</button>
 </div>
 
-<!-- Trang hỏi -->
-<div class="card" id="page2">
+<div class="box" id="ask">
 
 <h1 id="title"></h1>
 
-<p>
-Em làm người yêu anh nhé? ❤️
+<p style="font-size:22px;margin:20px 0;">
+Em làm người yêu anh nhé? 🥰
 </p>
 
-<div class="buttons">
+<button id="yes" class="btn">Yes</button>
 
-<button id="yes">Yes</button>
-
-<button id="no">No</button>
-
-</div>
-
-</div>
-
-<!-- Trang cuối -->
-<div class="card" id="page3">
-
-<h1 id="result"></h1>
-
-<p>
-sến quá-)))
-</p>
-
-<div class="heart">
-❤️
-</div>
+<button id="no" class="btn">No</button>
 
 </div>
 
 <script>
 
-let username="";
+let nameUser="";
 
-function start(){
+function next(){
 
-username=document.getElementById("name").value.trim();
+nameUser=document.getElementById("name").value.trim();
 
-if(username==""){
+if(nameUser==""){
 alert("Nhập tên trước nha ❤️");
 return;
 }
 
 document.getElementById("page1").style.display="none";
-document.getElementById("page2").style.display="block";
+document.getElementById("ask").style.display="block";
 
 document.getElementById("title").innerHTML=
-username+", làm người yêu anh nhé?";
+"Xin chào "+nameUser+" 👋";
 
 }
 
@@ -200,21 +125,43 @@ no.style.top=y+"px";
 no.addEventListener("mouseenter",moveNo);
 
 no.addEventListener("touchstart",function(e){
-
 e.preventDefault();
-
 moveNo();
+},{passive:false});
 
+no.addEventListener("click",function(e){
+e.preventDefault();
+moveNo();
 });
 
 document.getElementById("yes").onclick=function(){
 
-document.getElementById("page2").style.display="none";
+document.body.innerHTML=`
+<div style="
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+background:#ffd6e7;
+flex-direction:column;
+font-family:Arial;
+text-align:center;
+">
 
-document.getElementById("page3").style.display="block";
+<h1 style="font-size:42px;color:#ff4d6d;">
+${nameUser} ❤️
+</h1>
 
-document.getElementById("result").innerHTML=
-username+" ❤️";
+<h2 style="margin-top:15px;">
+từ giờ m là tài sản của mduy-))
+</h2>
+
+<div style="font-size:100px;margin-top:20px;">
+💖
+</div>
+
+</div>
+`;
 
 }
 
