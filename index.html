@@ -139,7 +139,7 @@ button{
 
 <div class="container">
     <img class="gif" src="https://media.tenor.com/LxggFGxwOjIAAAAC/shy-cat.gif">
-    <h1>Em đồng ý làm người yêu anh nhé? ❤️</h1>
+    <h1>Em đồng ý làm người yêu anh nhé? 😍</h1>
     <div class="buttons">
         <button id="yes">Em đồng ý</button>
         <button id="no">Không</button>
@@ -153,7 +153,6 @@ const msg = document.getElementById("msg");
 
 let scale = 1;
 let isMoving = false;
-let noOriginalPos = null;
 
 const texts = [
     "Không",
@@ -169,24 +168,9 @@ const texts = [
 
 let index = 0;
 
-// Lưu vị trí ban đầu của nút "Không"
-function saveNoPosition() {
-    const rect = no.getBoundingClientRect();
-    noOriginalPos = {
-        left: rect.left,
-        top: rect.top,
-        width: rect.width,
-        height: rect.height
-    };
-}
-
 function showMessage(text){
     msg.innerText = text;
     msg.style.display = "block";
-    msg.style.animation = "none";
-    void msg.offsetWidth;
-    msg.style.animation = "slideDown 0.3s ease";
-
     clearTimeout(window.msgTimer);
     window.msgTimer = setTimeout(() => {
         msg.style.display = "none";
@@ -197,40 +181,37 @@ function moveButton(){
     if (isMoving) return;
     isMoving = true;
 
-    // Lưu vị trí ban đầu nếu chưa có
-    if (!noOriginalPos) saveNoPosition();
-
-    // Chuyển sang chế độ fixed
-    no.classList.add("moving");
-
     // Lấy kích thước nút
     const noW = no.offsetWidth || 140;
     const noH = no.offsetHeight || 60;
 
     // Giới hạn trong màn hình (có padding)
-    const padding = 20;
+    const padding = 30;
     const maxX = window.innerWidth - noW - padding;
     const maxY = window.innerHeight - noH - padding;
 
-    // Random vị trí
-    let x = padding + Math.random() * (maxX - padding);
-    let y = padding + Math.random() * (maxY - padding);
+    // Đảm bảo không ra khỏi màn hình
+    let x = Math.max(padding, Math.random() * maxX);
+    let y = Math.max(padding, Math.random() * maxY);
 
     // Đảm bảo không đè lên nút "Đồng ý"
     const yesRect = yes.getBoundingClientRect();
     let attempts = 0;
-    while (attempts < 20) {
+    while (attempts < 30) {
         const centerX = x + noW/2;
         const centerY = y + noH/2;
         const distX = Math.abs(centerX - (yesRect.left + yesRect.width/2));
         const distY = Math.abs(centerY - (yesRect.top + yesRect.height/2));
-        if (distX > 150 || distY > 100) break;
-        x = padding + Math.random() * (maxX - padding);
-        y = padding + Math.random() * (maxY - padding);
+        // Nếu cách xa nút Yes thì dừng
+        if (distX > 200 || distY > 150) break;
+        // Nếu không, random lại
+        x = Math.max(padding, Math.random() * maxX);
+        y = Math.max(padding, Math.random() * maxY);
         attempts++;
     }
 
-    // Đặt vị trí mới
+    // Chuyển sang chế độ fixed và di chuyển
+    no.classList.add("moving");
     no.style.left = x + "px";
     no.style.top = y + "px";
 
@@ -246,10 +227,9 @@ function moveButton(){
 
     showMessage("😝 Không bấm được đâu!");
 
-    // Reset sau 400ms
     setTimeout(() => {
         isMoving = false;
-    }, 400);
+    }, 300);
 }
 
 // Reset nút "Không" về vị trí ban đầu
@@ -262,9 +242,6 @@ function resetNoButton(){
     no.innerText = texts[0];
     index = 0;
     isMoving = false;
-    // Reset kích thước
-    no.style.width = "auto";
-    no.style.height = "auto";
 }
 
 // ─── Sự kiện ────────────────────────────
@@ -301,7 +278,7 @@ yes.addEventListener("click", () => {
     container.style.padding = "20px";
 
     const title = document.createElement("h1");
-    title.innerHTML = "kệ mẹ m chứ";
+    title.innerHTML = "❤️ Cảm ơn em đã đồng ý ❤️";
     title.style.color = "white";
     title.style.fontSize = "42px";
     title.style.textAlign = "center";
@@ -310,7 +287,7 @@ yes.addEventListener("click", () => {
     container.appendChild(title);
 
     const sub = document.createElement("div");
-    sub.innerHTML = "mduy chim to";
+    sub.innerHTML = "Anh hứa sẽ luôn yêu em 💖";
     sub.style.color = "white";
     sub.style.fontSize = "24px";
     sub.style.textAlign = "center";
@@ -319,7 +296,6 @@ yes.addEventListener("click", () => {
 
     document.body.appendChild(container);
 
-    // Tạo trái tim
     setInterval(() => {
         const heart = document.createElement("div");
         heart.className = "heart";
@@ -356,17 +332,15 @@ window.addEventListener("load", () => {
     resetNoButton();
     yes.style.transform = "scale(1)";
     scale = 1;
-    saveNoPosition();
 });
 
-// Reset nếu bị lệch ra ngoài
+// Nếu nút bị lệch ra ngoài thì reset
 window.addEventListener("resize", () => {
     const rect = no.getBoundingClientRect();
-    if (rect.left < -10 || rect.top < -10 || 
-        rect.right > window.innerWidth + 10 || 
-        rect.bottom > window.innerHeight + 10) {
+    if (rect.left < 0 || rect.top < 0 || 
+        rect.right > window.innerWidth || 
+        rect.bottom > window.innerHeight) {
         resetNoButton();
-        setTimeout(saveNoPosition, 100);
     }
 });
 </script>
