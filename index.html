@@ -31,7 +31,6 @@ let index = 0;
 function resize(){
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-
     createHeart();
 }
 
@@ -46,16 +45,17 @@ function createHeart(){
 
     ctx.fillStyle = "hotpink";
 
-    const fontSize = Math.max(10, Math.min(canvas.width / 80, 14));
+    const fontSize = Math.max(10, Math.min(canvas.width / 75, 14));
     ctx.font = `bold ${fontSize}px Arial`;
     ctx.textAlign = "center";
 
-    // Trái tim tự co theo màn hình
-    const scale = Math.min(canvas.width, canvas.height) / 24;
+    // Trái tim vừa khít màn hình
+    const scale = Math.min(canvas.width, canvas.height) / 26;
 
-    for(let i = 0; i < 650; i++){
+    // Khoảng cách chữ xa hơn một chút
+    for(let i = 0; i < 1000; i++){
 
-        const t = i * 0.1;
+        const t = i * 0.03;
 
         const x = 16 * Math.pow(Math.sin(t),3);
 
@@ -82,8 +82,8 @@ function draw(){
 
     ctx.fillText(
         "I love you",
-        canvas.width/2 + p.x,
-        canvas.height/2 + p.y
+        canvas.width / 2 + p.x,
+        canvas.height / 2 + p.y
     );
 
     index++;
