@@ -26,13 +26,14 @@ body{
 }
 
 .container{
-
     text-align:center;
-
+    position:relative;
+    width:100%;
+    max-width:500px;
+    padding:20px;
 }
 
 .gif{
-
     width:220px;
     max-width:70vw;
     border-radius:20px;
@@ -41,7 +42,6 @@ body{
 }
 
 h1{
-
     color:#fff;
     margin-top:20px;
     font-size:30px;
@@ -49,15 +49,17 @@ h1{
 }
 
 .buttons{
-
     margin-top:35px;
     position:relative;
-    width:100vw;
-    height:220px;
+    width:100%;
+    height:120px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:30px;
 }
 
 button{
-
     border:none;
     cursor:pointer;
     border-radius:16px;
@@ -65,29 +67,29 @@ button{
     font-size:22px;
     padding:15px 40px;
     font-weight:bold;
-    position:absolute;
+    position:relative;
+    z-index:2;
 }
 
 #yes{
-
-    left:calc(50% - 170px);
-    top:60px;
-
     background:#ff2d55;
     color:#fff;
 }
 
 #no{
-
-    left:calc(50% + 40px);
-    top:60px;
-
     background:#fff;
     color:#ff2d55;
 }
 
-.message{
+/* Nút "Không" khi di chuyển sẽ dùng fixed */
+#no.moving{
+    position:fixed;
+    z-index:999;
+    left:50%;
+    top:50%;
+}
 
+.message{
     position:fixed;
     left:50%;
     top:20px;
@@ -99,28 +101,59 @@ button{
     font-weight:bold;
     display:none;
     z-index:999;
+    font-size:16px;
+    white-space:nowrap;
 }
 
 .heart{
-
     position:fixed;
     font-size:26px;
     pointer-events:none;
     animation:fly 3s linear forwards;
+    z-index:1000;
 }
 
 @keyframes fly{
-
     0%{
         transform:translateY(0) scale(1);
         opacity:1;
     }
-
     100%{
         transform:translateY(-800px) scale(2);
         opacity:0;
     }
+}
 
+/* Responsive cho mobile */
+@media (max-width:600px){
+    .gif{
+        width:160px;
+    }
+    h1{
+        font-size:22px;
+    }
+    button{
+        font-size:18px;
+        padding:12px 28px;
+    }
+    .buttons{
+        gap:20px;
+        height:100px;
+    }
+    .message{
+        font-size:14px;
+        padding:10px 16px;
+    }
+}
+
+@media (max-width:400px){
+    h1{
+        font-size:18px;
+    }
+    button{
+        font-size:15px;
+        padding:10px 20px;
+    }
 }
 
 </style>
@@ -161,6 +194,8 @@ const no=document.getElementById("no");
 const msg=document.getElementById("msg");
 
 let scale=1;
+let isMoving=false;
+let moveTimeout=null;
 
 const texts=[
 "Không",
@@ -175,133 +210,170 @@ const texts=[
 ];
 
 let index=0;
-    function showMessage(text){
 
+function showMessage(text){
     msg.innerText=text;
     msg.style.display="block";
 
     clearTimeout(window.msgTimer);
-
     window.msgTimer=setTimeout(()=>{
         msg.style.display="none";
     },1500);
-
 }
 
 function moveButton(){
 
-    const w=window.innerWidth-no.offsetWidth-20;
-    const h=window.innerHeight-no.offsetHeight-20;
+    if(isMoving) return;
+    isMoving=true;
 
-    const x=Math.random()*w;
-    const y=Math.random()*h;
+    // Chuyển sang chế độ fixed
+    no.classList.add("moving");
 
-    no.style.left=x+"px";
-    no.style.top=y+"px";
+    // Lấy kích thước
+    const noW = no.offsetWidth || 140;
+    const noH = no.offsetHeight || 60;
 
-    if(index<texts.length-1){
-        index++;
+    // Tính vị trí an toàn (không ra khỏi màn hình)
+    const padding = 10;
+    const maxX = window.innerWidth - noW - padding;
+    const maxY = window.innerHeight - noH - padding;
+
+    // Random vị trí
+    let x = Math.random() * maxX;
+    let y = Math.random() * maxY;
+
+    // Đảm bảo không đè lên nút "Đồng ý"
+    const yesRect = yes.getBoundingClientRect();
+    const attempts = 0;
+    while (attempts < 10) {
+        const distX = Math.abs(x - yesRect.left);
+        const distY = Math.abs(y - yesRect.top);
+        if (distX > 100 || distY > 80) break;
+        x = Math.random() * maxX;
+        y = Math.random() * maxY;
     }
 
-    no.innerText=texts[index];
+    // Đặt vị trí
+    no.style.left = x + "px";
+    no.style.top = y + "px";
 
-    scale+=0.12;
+    // Đổi text
+    if(index < texts.length - 1){
+        index++;
+    }
+    no.innerText = texts[index];
 
-    yes.style.transform=`scale(${scale})`;
+    // Phóng to nút Yes
+    scale += 0.12;
+    yes.style.transform = `scale(${Math.min(scale, 2.5)})`;
 
     showMessage("😝 Không bấm được đâu!");
 
+    // Mở khóa sau 300ms
+    setTimeout(() => {
+        isMoving=false;
+    }, 300);
 }
 
-no.addEventListener("mouseenter",moveButton);
+// Reset nút "Không" về vị trí ban đầu
+function resetNoButton(){
+    no.classList.remove("moving");
+    no.style.position = "relative";
+    no.style.left = "auto";
+    no.style.top = "auto";
+    no.style.transform = "none";
+    no.innerText = texts[0];
+    index=0;
+    isMoving=false;
+}
 
-no.addEventListener("touchstart",function(e){
+// ─── Event Listeners ────────────────────
 
+// Nút "Không" - di chuyển khi hover/click
+no.addEventListener("mouseenter", (e) => {
+    if(!isMoving) moveButton();
+});
+
+no.addEventListener("touchstart", (e) => {
     e.preventDefault();
-    moveButton();
+    if(!isMoving) moveButton();
+}, {passive:false});
 
-},{passive:false});
+no.addEventListener("click", (e) => {
+    e.preventDefault();
+    if(!isMoving) moveButton();
+});
 
-no.addEventListener("click",moveButton);
-
-yes.addEventListener("click",()=>{
+// Nút "Đồng ý"
+yes.addEventListener("click", ()=>{
 
     document.body.innerHTML="";
 
     document.body.style.margin="0";
     document.body.style.background="linear-gradient(135deg,#ff4f8b,#ff9ecb)";
     document.body.style.overflow="hidden";
+    document.body.style.display="flex";
+    document.body.style.justifyContent="center";
+    document.body.style.alignItems="center";
+    document.body.style.minHeight="100vh";
+
+    // Tạo container mới
+    const container = document.createElement("div");
+    container.style.textAlign="center";
+    container.style.padding="20px";
 
     const title=document.createElement("h1");
-
     title.innerHTML="❤️ Cảm ơn em đã đồng ý ❤️";
-
-    title.style.position="fixed";
-    title.style.left="50%";
-    title.style.top="45%";
-    title.style.transform="translate(-50%,-50%)";
     title.style.color="white";
     title.style.fontSize="42px";
     title.style.textAlign="center";
     title.style.textShadow="0 0 20px #fff";
-
-    document.body.appendChild(title);
+    title.style.marginBottom="15px";
+    container.appendChild(title);
 
     const sub=document.createElement("div");
-
     sub.innerHTML="Anh hứa sẽ luôn yêu em 💖";
-
-    sub.style.position="fixed";
-    sub.style.left="50%";
-    sub.style.top="55%";
-    sub.style.transform="translateX(-50%)";
     sub.style.color="white";
     sub.style.fontSize="24px";
+    sub.style.textAlign="center";
+    sub.style.textShadow="0 0 15px rgba(255,255,255,0.3)";
+    container.appendChild(sub);
 
-    document.body.appendChild(sub);
+    document.body.appendChild(container);
 
+    // Tạo trái tim rơi
     setInterval(()=>{
-
         const heart=document.createElement("div");
-
         heart.className="heart";
         heart.innerHTML="❤️";
-
         heart.style.left=Math.random()*window.innerWidth+"px";
         heart.style.bottom="-40px";
-
         heart.style.fontSize=(20+Math.random()*35)+"px";
-
         document.body.appendChild(heart);
-
         setTimeout(()=>heart.remove(),3000);
-
     },120);
 
 });
-    // Đưa nút "Không" về đúng vị trí khi tải trang
+
+// Reset nút "Không" khi load
 window.addEventListener("load", () => {
-    no.style.left = "calc(50% + 40px)";
-    no.style.top = "60px";
+    resetNoButton();
+    yes.style.transform = "scale(1)";
+    scale=1;
 });
 
-// Khi xoay màn hình hoặc đổi kích thước
+// Khi resize, reset nút "Không" nếu bị lệch
 window.addEventListener("resize", () => {
-
-    const x = parseFloat(no.style.left) || 0;
-    const y = parseFloat(no.style.top) || 0;
-
-    if (x > window.innerWidth - no.offsetWidth) {
-        no.style.left = (window.innerWidth - no.offsetWidth - 20) + "px";
+    const rect = no.getBoundingClientRect();
+    if (rect.left < 0 || rect.top < 0 || 
+        rect.right > window.innerWidth || 
+        rect.bottom > window.innerHeight) {
+        resetNoButton();
     }
-
-    if (y > window.innerHeight - no.offsetHeight) {
-        no.style.top = (window.innerHeight - no.offsetHeight - 20) + "px";
-    }
-
 });
 
-// Hiệu ứng phóng to nhẹ khi rê vào nút Đồng ý
+// ─── Hover effect cho Yes ──────────────
+
 yes.addEventListener("mouseenter", () => {
     yes.style.filter = "brightness(1.1)";
 });
@@ -310,7 +382,6 @@ yes.addEventListener("mouseleave", () => {
     yes.style.filter = "brightness(1)";
 });
 
-// Hỗ trợ cảm ứng
 yes.addEventListener("touchstart", () => {
     yes.style.filter = "brightness(1.1)";
 });
