@@ -3,11 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>❤️ Love ❤️</title>
-
 <style>
-
 *{
     margin:0;
     padding:0;
@@ -81,12 +78,9 @@ button{
     color:#ff2d55;
 }
 
-/* Nút "Không" khi di chuyển sẽ dùng fixed */
 #no.moving{
     position:fixed;
     z-index:999;
-    left:50%;
-    top:50%;
 }
 
 .message{
@@ -103,6 +97,7 @@ button{
     z-index:999;
     font-size:16px;
     white-space:nowrap;
+    box-shadow:0 4px 20px rgba(0,0,0,0.15);
 }
 
 .heart{
@@ -124,141 +119,123 @@ button{
     }
 }
 
-/* Responsive cho mobile */
 @media (max-width:600px){
-    .gif{
-        width:160px;
-    }
-    h1{
-        font-size:22px;
-    }
-    button{
-        font-size:18px;
-        padding:12px 28px;
-    }
-    .buttons{
-        gap:20px;
-        height:100px;
-    }
-    .message{
-        font-size:14px;
-        padding:10px 16px;
-    }
+    .gif{width:160px;}
+    h1{font-size:22px;}
+    button{font-size:18px;padding:12px 28px;}
+    .buttons{gap:20px;height:100px;}
+    .message{font-size:14px;padding:10px 16px;}
 }
 
 @media (max-width:400px){
-    h1{
-        font-size:18px;
-    }
-    button{
-        font-size:15px;
-        padding:10px 20px;
-    }
+    h1{font-size:18px;}
+    button{font-size:15px;padding:10px 20px;}
 }
-
 </style>
-
 </head>
-
 <body>
 
 <div class="message" id="msg"></div>
 
 <div class="container">
-
-<img
-class="gif"
-src="https://media.tenor.com/LxggFGxwOjIAAAAC/shy-cat.gif"
->
-
-<h1>Em đồng ý làm người yêu anh nhé? ❤️</h1>
-
-<div class="buttons">
-
-<button id="yes">
-Em đồng ý
-</button>
-
-<button id="no">
-Không
-</button>
-
-</div>
-
+    <img class="gif" src="https://media.tenor.com/LxggFGxwOjIAAAAC/shy-cat.gif">
+    <h1>Em đồng ý làm người yêu anh nhé? ❤️</h1>
+    <div class="buttons">
+        <button id="yes">Em đồng ý</button>
+        <button id="no">Không</button>
+    </div>
 </div>
 
 <script>
+const yes = document.getElementById("yes");
+const no = document.getElementById("no");
+const msg = document.getElementById("msg");
 
-const yes=document.getElementById("yes");
-const no=document.getElementById("no");
-const msg=document.getElementById("msg");
+let scale = 1;
+let isMoving = false;
+let noOriginalPos = null;
 
-let scale=1;
-let isMoving=false;
-let moveTimeout=null;
-
-const texts=[
-"Không",
-"Thôi mà 🥺",
-"Đừng bấm 😭",
-"Anh buồn đó...",
-"Suy nghĩ lại đi ❤️",
-"Em chắc chưa?",
-"🥹🥹🥹",
-"Không được đâu 😂",
-"Ấn Đồng Ý đi ❤️"
+const texts = [
+    "Không",
+    "Thôi mà 🥺",
+    "Đừng bấm 😭",
+    "Anh buồn đó...",
+    "Suy nghĩ lại đi ❤️",
+    "Em chắc chưa?",
+    "🥹🥹🥹",
+    "Không được đâu 😂",
+    "Ấn Đồng Ý đi ❤️"
 ];
 
-let index=0;
+let index = 0;
+
+// Lưu vị trí ban đầu của nút "Không"
+function saveNoPosition() {
+    const rect = no.getBoundingClientRect();
+    noOriginalPos = {
+        left: rect.left,
+        top: rect.top,
+        width: rect.width,
+        height: rect.height
+    };
+}
 
 function showMessage(text){
-    msg.innerText=text;
-    msg.style.display="block";
+    msg.innerText = text;
+    msg.style.display = "block";
+    msg.style.animation = "none";
+    void msg.offsetWidth;
+    msg.style.animation = "slideDown 0.3s ease";
 
     clearTimeout(window.msgTimer);
-    window.msgTimer=setTimeout(()=>{
-        msg.style.display="none";
-    },1500);
+    window.msgTimer = setTimeout(() => {
+        msg.style.display = "none";
+    }, 1500);
 }
 
 function moveButton(){
+    if (isMoving) return;
+    isMoving = true;
 
-    if(isMoving) return;
-    isMoving=true;
+    // Lưu vị trí ban đầu nếu chưa có
+    if (!noOriginalPos) saveNoPosition();
 
     // Chuyển sang chế độ fixed
     no.classList.add("moving");
 
-    // Lấy kích thước
+    // Lấy kích thước nút
     const noW = no.offsetWidth || 140;
     const noH = no.offsetHeight || 60;
 
-    // Tính vị trí an toàn (không ra khỏi màn hình)
-    const padding = 10;
+    // Giới hạn trong màn hình (có padding)
+    const padding = 20;
     const maxX = window.innerWidth - noW - padding;
     const maxY = window.innerHeight - noH - padding;
 
     // Random vị trí
-    let x = Math.random() * maxX;
-    let y = Math.random() * maxY;
+    let x = padding + Math.random() * (maxX - padding);
+    let y = padding + Math.random() * (maxY - padding);
 
     // Đảm bảo không đè lên nút "Đồng ý"
     const yesRect = yes.getBoundingClientRect();
-    const attempts = 0;
-    while (attempts < 10) {
-        const distX = Math.abs(x - yesRect.left);
-        const distY = Math.abs(y - yesRect.top);
-        if (distX > 100 || distY > 80) break;
-        x = Math.random() * maxX;
-        y = Math.random() * maxY;
+    let attempts = 0;
+    while (attempts < 20) {
+        const centerX = x + noW/2;
+        const centerY = y + noH/2;
+        const distX = Math.abs(centerX - (yesRect.left + yesRect.width/2));
+        const distY = Math.abs(centerY - (yesRect.top + yesRect.height/2));
+        if (distX > 150 || distY > 100) break;
+        x = padding + Math.random() * (maxX - padding);
+        y = padding + Math.random() * (maxY - padding);
+        attempts++;
     }
 
-    // Đặt vị trí
+    // Đặt vị trí mới
     no.style.left = x + "px";
     no.style.top = y + "px";
 
     // Đổi text
-    if(index < texts.length - 1){
+    if (index < texts.length - 1) {
         index++;
     }
     no.innerText = texts[index];
@@ -269,10 +246,10 @@ function moveButton(){
 
     showMessage("😝 Không bấm được đâu!");
 
-    // Mở khóa sau 300ms
+    // Reset sau 400ms
     setTimeout(() => {
-        isMoving=false;
-    }, 300);
+        isMoving = false;
+    }, 400);
 }
 
 // Reset nút "Không" về vị trí ban đầu
@@ -283,96 +260,79 @@ function resetNoButton(){
     no.style.top = "auto";
     no.style.transform = "none";
     no.innerText = texts[0];
-    index=0;
-    isMoving=false;
+    index = 0;
+    isMoving = false;
+    // Reset kích thước
+    no.style.width = "auto";
+    no.style.height = "auto";
 }
 
-// ─── Event Listeners ────────────────────
+// ─── Sự kiện ────────────────────────────
 
 // Nút "Không" - di chuyển khi hover/click
 no.addEventListener("mouseenter", (e) => {
-    if(!isMoving) moveButton();
+    e.preventDefault();
+    if (!isMoving) moveButton();
 });
 
 no.addEventListener("touchstart", (e) => {
     e.preventDefault();
-    if(!isMoving) moveButton();
-}, {passive:false});
+    if (!isMoving) moveButton();
+}, {passive: false});
 
 no.addEventListener("click", (e) => {
     e.preventDefault();
-    if(!isMoving) moveButton();
+    if (!isMoving) moveButton();
 });
 
 // Nút "Đồng ý"
-yes.addEventListener("click", ()=>{
+yes.addEventListener("click", () => {
+    document.body.innerHTML = "";
+    document.body.style.margin = "0";
+    document.body.style.background = "linear-gradient(135deg,#ff4f8b,#ff9ecb)";
+    document.body.style.overflow = "hidden";
+    document.body.style.display = "flex";
+    document.body.style.justifyContent = "center";
+    document.body.style.alignItems = "center";
+    document.body.style.minHeight = "100vh";
 
-    document.body.innerHTML="";
-
-    document.body.style.margin="0";
-    document.body.style.background="linear-gradient(135deg,#ff4f8b,#ff9ecb)";
-    document.body.style.overflow="hidden";
-    document.body.style.display="flex";
-    document.body.style.justifyContent="center";
-    document.body.style.alignItems="center";
-    document.body.style.minHeight="100vh";
-
-    // Tạo container mới
     const container = document.createElement("div");
-    container.style.textAlign="center";
-    container.style.padding="20px";
+    container.style.textAlign = "center";
+    container.style.padding = "20px";
 
-    const title=document.createElement("h1");
-    title.innerHTML="❤️ Cảm ơn em đã đồng ý ❤️";
-    title.style.color="white";
-    title.style.fontSize="42px";
-    title.style.textAlign="center";
-    title.style.textShadow="0 0 20px #fff";
-    title.style.marginBottom="15px";
+    const title = document.createElement("h1");
+    title.innerHTML = "kệ mẹ m chứ";
+    title.style.color = "white";
+    title.style.fontSize = "42px";
+    title.style.textAlign = "center";
+    title.style.textShadow = "0 0 20px #fff";
+    title.style.marginBottom = "15px";
     container.appendChild(title);
 
-    const sub=document.createElement("div");
-    sub.innerHTML="Anh hứa sẽ luôn yêu em 💖";
-    sub.style.color="white";
-    sub.style.fontSize="24px";
-    sub.style.textAlign="center";
-    sub.style.textShadow="0 0 15px rgba(255,255,255,0.3)";
+    const sub = document.createElement("div");
+    sub.innerHTML = "mduy chim to";
+    sub.style.color = "white";
+    sub.style.fontSize = "24px";
+    sub.style.textAlign = "center";
+    sub.style.textShadow = "0 0 15px rgba(255,255,255,0.3)";
     container.appendChild(sub);
 
     document.body.appendChild(container);
 
-    // Tạo trái tim rơi
-    setInterval(()=>{
-        const heart=document.createElement("div");
-        heart.className="heart";
-        heart.innerHTML="❤️";
-        heart.style.left=Math.random()*window.innerWidth+"px";
-        heart.style.bottom="-40px";
-        heart.style.fontSize=(20+Math.random()*35)+"px";
+    // Tạo trái tim
+    setInterval(() => {
+        const heart = document.createElement("div");
+        heart.className = "heart";
+        heart.innerHTML = ["❤️","💖","💕","💗","💓","💝"][Math.floor(Math.random()*6)];
+        heart.style.left = Math.random() * window.innerWidth + "px";
+        heart.style.bottom = "-40px";
+        heart.style.fontSize = (20 + Math.random() * 35) + "px";
         document.body.appendChild(heart);
-        setTimeout(()=>heart.remove(),3000);
-    },120);
-
+        setTimeout(() => heart.remove(), 3000);
+    }, 120);
 });
 
-// Reset nút "Không" khi load
-window.addEventListener("load", () => {
-    resetNoButton();
-    yes.style.transform = "scale(1)";
-    scale=1;
-});
-
-// Khi resize, reset nút "Không" nếu bị lệch
-window.addEventListener("resize", () => {
-    const rect = no.getBoundingClientRect();
-    if (rect.left < 0 || rect.top < 0 || 
-        rect.right > window.innerWidth || 
-        rect.bottom > window.innerHeight) {
-        resetNoButton();
-    }
-});
-
-// ─── Hover effect cho Yes ──────────────
+// ─── Hiệu ứng hover Yes ─────────────────
 
 yes.addEventListener("mouseenter", () => {
     yes.style.filter = "brightness(1.1)";
@@ -390,6 +350,25 @@ yes.addEventListener("touchend", () => {
     yes.style.filter = "brightness(1)";
 });
 
+// ─── Window Events ──────────────────────
+
+window.addEventListener("load", () => {
+    resetNoButton();
+    yes.style.transform = "scale(1)";
+    scale = 1;
+    saveNoPosition();
+});
+
+// Reset nếu bị lệch ra ngoài
+window.addEventListener("resize", () => {
+    const rect = no.getBoundingClientRect();
+    if (rect.left < -10 || rect.top < -10 || 
+        rect.right > window.innerWidth + 10 || 
+        rect.bottom > window.innerHeight + 10) {
+        resetNoButton();
+        setTimeout(saveNoPosition, 100);
+    }
+});
 </script>
 
 </body>
