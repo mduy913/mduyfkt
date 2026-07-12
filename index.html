@@ -1,99 +1,326 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>I Love You Heart</title>
+
+<title>❤️ Love ❤️</title>
 
 <style>
-html,body{
+
+*{
     margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial,sans-serif;
+}
+
+body{
+    width:100vw;
+    height:100vh;
     overflow:hidden;
-    background:#000;
+    background:linear-gradient(135deg,#ff9ecb,#ff6ea9,#ff4f8b);
+    display:flex;
+    justify-content:center;
+    align-items:center;
 }
 
-canvas{
-    display:block;
-}
-</style>
-</head>
-<body>
+.container{
 
-<canvas id="c"></canvas>
+    text-align:center;
 
-<script>
-const canvas = document.getElementById("c");
-const ctx = canvas.getContext("2d");
-
-let points = [];
-let index = 0;
-
-function resize(){
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    createHeart();
 }
 
-window.addEventListener("resize", resize);
+.gif{
 
-function createHeart(){
+    width:220px;
+    max-width:70vw;
+    border-radius:20px;
+    user-select:none;
+    pointer-events:none;
+}
 
-    ctx.clearRect(0,0,canvas.width,canvas.height);
+h1{
 
-    points = [];
-    index = 0;
+    color:#fff;
+    margin-top:20px;
+    font-size:30px;
+    text-shadow:0 0 15px rgba(255,255,255,.6);
+}
 
-    ctx.fillStyle = "hotpink";
+.buttons{
 
-    const fontSize = Math.max(10, Math.min(canvas.width / 75, 14));
-    ctx.font = `bold ${fontSize}px Arial`;
-    ctx.textAlign = "center";
+    margin-top:35px;
+    position:relative;
+    width:100vw;
+    height:220px;
+}
 
-    // Trái tim vừa khít màn hình
-    const scale = Math.min(canvas.width, canvas.height) / 26;
+button{
 
-    // Khoảng cách chữ xa hơn một chút
-    for(let i = 0; i < 1000; i++){
+    border:none;
+    cursor:pointer;
+    border-radius:16px;
+    transition:.25s;
+    font-size:22px;
+    padding:15px 40px;
+    font-weight:bold;
+    position:absolute;
+}
 
-        const t = i * 0.03;
+#yes{
 
-        const x = 16 * Math.pow(Math.sin(t),3);
+    left:calc(50% - 170px);
+    top:60px;
 
-        const y =
-            13 * Math.cos(t)
-            -5 * Math.cos(2*t)
-            -2 * Math.cos(3*t)
-            -Math.cos(4*t);
+    background:#ff2d55;
+    color:#fff;
+}
 
-        points.push({
-            x: x * scale,
-            y: -y * scale
-        });
+#no{
+
+    left:calc(50% + 40px);
+    top:60px;
+
+    background:#fff;
+    color:#ff2d55;
+}
+
+.message{
+
+    position:fixed;
+    left:50%;
+    top:20px;
+    transform:translateX(-50%);
+    background:#fff;
+    color:#ff2d55;
+    padding:12px 22px;
+    border-radius:15px;
+    font-weight:bold;
+    display:none;
+    z-index:999;
+}
+
+.heart{
+
+    position:fixed;
+    font-size:26px;
+    pointer-events:none;
+    animation:fly 3s linear forwards;
+}
+
+@keyframes fly{
+
+    0%{
+        transform:translateY(0) scale(1);
+        opacity:1;
     }
 
-    draw();
+    100%{
+        transform:translateY(-800px) scale(2);
+        opacity:0;
+    }
+
 }
 
-function draw(){
+</style>
 
-    if(index >= points.length) return;
+</head>
 
-    const p = points[index];
+<body>
 
-    ctx.fillText(
-        "I love you",
-        canvas.width / 2 + p.x,
-        canvas.height / 2 + p.y
-    );
+<div class="message" id="msg"></div>
 
-    index++;
+<div class="container">
 
-    requestAnimationFrame(draw);
+<img
+class="gif"
+src="https://media.tenor.com/LxggFGxwOjIAAAAC/shy-cat.gif"
+>
+
+<h1>Em đồng ý làm người yêu anh nhé? ❤️</h1>
+
+<div class="buttons">
+
+<button id="yes">
+Em đồng ý
+</button>
+
+<button id="no">
+Không
+</button>
+
+</div>
+
+</div>
+
+<script>
+
+const yes=document.getElementById("yes");
+const no=document.getElementById("no");
+const msg=document.getElementById("msg");
+
+let scale=1;
+
+const texts=[
+"Không",
+"Thôi mà 🥺",
+"Đừng bấm 😭",
+"Anh buồn đó...",
+"Suy nghĩ lại đi ❤️",
+"Em chắc chưa?",
+"🥹🥹🥹",
+"Không được đâu 😂",
+"Ấn Đồng Ý đi ❤️"
+];
+
+let index=0;
+    function showMessage(text){
+
+    msg.innerText=text;
+    msg.style.display="block";
+
+    clearTimeout(window.msgTimer);
+
+    window.msgTimer=setTimeout(()=>{
+        msg.style.display="none";
+    },1500);
+
 }
 
-resize();
+function moveButton(){
+
+    const w=window.innerWidth-no.offsetWidth-20;
+    const h=window.innerHeight-no.offsetHeight-20;
+
+    const x=Math.random()*w;
+    const y=Math.random()*h;
+
+    no.style.left=x+"px";
+    no.style.top=y+"px";
+
+    if(index<texts.length-1){
+        index++;
+    }
+
+    no.innerText=texts[index];
+
+    scale+=0.12;
+
+    yes.style.transform=`scale(${scale})`;
+
+    showMessage("😝 Không bấm được đâu!");
+
+}
+
+no.addEventListener("mouseenter",moveButton);
+
+no.addEventListener("touchstart",function(e){
+
+    e.preventDefault();
+    moveButton();
+
+},{passive:false});
+
+no.addEventListener("click",moveButton);
+
+yes.addEventListener("click",()=>{
+
+    document.body.innerHTML="";
+
+    document.body.style.margin="0";
+    document.body.style.background="linear-gradient(135deg,#ff4f8b,#ff9ecb)";
+    document.body.style.overflow="hidden";
+
+    const title=document.createElement("h1");
+
+    title.innerHTML="❤️ Cảm ơn em đã đồng ý ❤️";
+
+    title.style.position="fixed";
+    title.style.left="50%";
+    title.style.top="45%";
+    title.style.transform="translate(-50%,-50%)";
+    title.style.color="white";
+    title.style.fontSize="42px";
+    title.style.textAlign="center";
+    title.style.textShadow="0 0 20px #fff";
+
+    document.body.appendChild(title);
+
+    const sub=document.createElement("div");
+
+    sub.innerHTML="Anh hứa sẽ luôn yêu em 💖";
+
+    sub.style.position="fixed";
+    sub.style.left="50%";
+    sub.style.top="55%";
+    sub.style.transform="translateX(-50%)";
+    sub.style.color="white";
+    sub.style.fontSize="24px";
+
+    document.body.appendChild(sub);
+
+    setInterval(()=>{
+
+        const heart=document.createElement("div");
+
+        heart.className="heart";
+        heart.innerHTML="❤️";
+
+        heart.style.left=Math.random()*window.innerWidth+"px";
+        heart.style.bottom="-40px";
+
+        heart.style.fontSize=(20+Math.random()*35)+"px";
+
+        document.body.appendChild(heart);
+
+        setTimeout(()=>heart.remove(),3000);
+
+    },120);
+
+});
+    // Đưa nút "Không" về đúng vị trí khi tải trang
+window.addEventListener("load", () => {
+    no.style.left = "calc(50% + 40px)";
+    no.style.top = "60px";
+});
+
+// Khi xoay màn hình hoặc đổi kích thước
+window.addEventListener("resize", () => {
+
+    const x = parseFloat(no.style.left) || 0;
+    const y = parseFloat(no.style.top) || 0;
+
+    if (x > window.innerWidth - no.offsetWidth) {
+        no.style.left = (window.innerWidth - no.offsetWidth - 20) + "px";
+    }
+
+    if (y > window.innerHeight - no.offsetHeight) {
+        no.style.top = (window.innerHeight - no.offsetHeight - 20) + "px";
+    }
+
+});
+
+// Hiệu ứng phóng to nhẹ khi rê vào nút Đồng ý
+yes.addEventListener("mouseenter", () => {
+    yes.style.filter = "brightness(1.1)";
+});
+
+yes.addEventListener("mouseleave", () => {
+    yes.style.filter = "brightness(1)";
+});
+
+// Hỗ trợ cảm ứng
+yes.addEventListener("touchstart", () => {
+    yes.style.filter = "brightness(1.1)";
+});
+
+yes.addEventListener("touchend", () => {
+    yes.style.filter = "brightness(1)";
+});
 
 </script>
 
 </body>
 </html>
+    
