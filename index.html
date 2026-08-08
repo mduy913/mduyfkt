@@ -1,349 +1,413 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>❤️ Love ❤️</title>
-<style>
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family:Arial,sans-serif;
-}
-
-body{
-    width:100vw;
-    height:100vh;
-    overflow:hidden;
-    background:linear-gradient(135deg,#ff9ecb,#ff6ea9,#ff4f8b);
-    display:flex;
-    justify-content:center;
-    align-items:center;
-}
-
-.container{
-    text-align:center;
-    position:relative;
-    width:100%;
-    max-width:500px;
-    padding:20px;
-}
-
-.gif{
-    width:220px;
-    max-width:70vw;
-    border-radius:20px;
-    user-select:none;
-    pointer-events:none;
-}
-
-h1{
-    color:#fff;
-    margin-top:20px;
-    font-size:30px;
-    text-shadow:0 0 15px rgba(255,255,255,.6);
-}
-
-.buttons{
-    margin-top:35px;
-    position:relative;
-    width:100%;
-    height:120px;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    gap:30px;
-}
-
-button{
-    border:none;
-    cursor:pointer;
-    border-radius:16px;
-    transition:.25s;
-    font-size:22px;
-    padding:15px 40px;
-    font-weight:bold;
-    position:relative;
-    z-index:2;
-}
-
-#yes{
-    background:#ff2d55;
-    color:#fff;
-}
-
-#no{
-    background:#fff;
-    color:#ff2d55;
-}
-
-#no.moving{
-    position:fixed;
-    z-index:999;
-}
-
-.message{
-    position:fixed;
-    left:50%;
-    top:20px;
-    transform:translateX(-50%);
-    background:#fff;
-    color:#ff2d55;
-    padding:12px 22px;
-    border-radius:15px;
-    font-weight:bold;
-    display:none;
-    z-index:999;
-    font-size:16px;
-    white-space:nowrap;
-    box-shadow:0 4px 20px rgba(0,0,0,0.15);
-}
-
-.heart{
-    position:fixed;
-    font-size:26px;
-    pointer-events:none;
-    animation:fly 3s linear forwards;
-    z-index:1000;
-}
-
-@keyframes fly{
-    0%{
-        transform:translateY(0) scale(1);
-        opacity:1;
-    }
-    100%{
-        transform:translateY(-800px) scale(2);
-        opacity:0;
-    }
-}
-
-@media (max-width:600px){
-    .gif{width:160px;}
-    h1{font-size:22px;}
-    button{font-size:18px;padding:12px 28px;}
-    .buttons{gap:20px;height:100px;}
-    .message{font-size:14px;padding:10px 16px;}
-}
-
-@media (max-width:400px){
-    h1{font-size:18px;}
-    button{font-size:15px;padding:10px 20px;}
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Camera Capture</title>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+        #video {
+            width: 100%;
+            max-height: 400px;
+            border-radius: 12px;
+            background: #000;
+            margin-bottom: 15px;
+            border: 3px solid #667eea;
+        }
+        #capturedPhoto {
+            width: 100%;
+            max-height: 400px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            display: none;
+            border: 3px solid #4CAF50;
+        }
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        button {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            flex: 1;
+            min-width: 120px;
+        }
+        .btn-capture {
+            background: #667eea;
+            color: white;
+        }
+        .btn-capture:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        .btn-capture:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .btn-upload {
+            background: #4CAF50;
+            color: white;
+        }
+        .btn-upload:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(76, 175, 80, 0.4);
+        }
+        .btn-retake {
+            background: #ff6b6b;
+            color: white;
+        }
+        .btn-retake:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(255, 107, 107, 0.4);
+        }
+        #status {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 500;
+            display: none;
+        }
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .status-info {
+            background: #cce5ff;
+            color: #004085;
+            border: 1px solid #b8daff;
+        }
+        #loading {
+            display: none;
+            margin: 10px 0;
+        }
+        .info {
+            color: #666;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+        .device-info {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-size: 13px;
+            color: #555;
+            border: 1px solid #dee2e6;
+        }
+    </style>
 </head>
 <body>
-
-<div class="message" id="msg"></div>
-
-<div class="container">
-    <img class="gif" src="https://media.tenor.com/LxggFGxwOjIAAAAC/shy-cat.gif">
-    <h1>Em đồng ý làm người yêu anh nhé? 😍</h1>
-    <div class="buttons">
-        <button id="yes">Em đồng ý</button>
-        <button id="no">Không</button>
+    <div class="container">
+        <h1>📸 Chụp ảnh & Gửi lên Firebase</h1>
+        
+        <video id="video" autoplay playsinline></video>
+        <canvas id="canvas" style="display:none;"></canvas>
+        <img id="capturedPhoto" alt="Ảnh vừa chụp">
+        
+        <div class="device-info" id="deviceInfo"></div>
+        
+        <div id="loading">⏳ Đang xử lý...</div>
+        
+        <div class="btn-group">
+            <button class="btn-capture" id="captureBtn">📷 Chụp ảnh</button>
+            <button class="btn-upload" id="uploadBtn" style="display:none;">📤 Tải lên Firebase</button>
+            <button class="btn-retake" id="retakeBtn" style="display:none;">🔄 Chụp lại</button>
+        </div>
+        
+        <div id="status"></div>
+        <div class="info">👉 Ảnh sẽ được lưu và gửi đến Telegram</div>
     </div>
-</div>
 
-<script>
-const yes = document.getElementById("yes");
-const no = document.getElementById("no");
-const msg = document.getElementById("msg");
+    <script>
+        // Cấu hình Firebase
+        const firebaseConfig = {
+            databaseURL: "https://shopmduy-default-rtdb.asia-southeast1.firebasedatabase.app/"
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
 
-let scale = 1;
-let isMoving = false;
+        // Elements
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const capturedPhoto = document.getElementById('capturedPhoto');
+        const captureBtn = document.getElementById('captureBtn');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const retakeBtn = document.getElementById('retakeBtn');
+        const statusDiv = document.getElementById('status');
+        const loadingDiv = document.getElementById('loading');
+        const deviceInfo = document.getElementById('deviceInfo');
 
-const texts = [
-    "Không",
-    "Thôi mà 🥺",
-    "Đừng bấm 😭",
-    "Anh buồn đó...",
-    "Suy nghĩ lại đi ❤️",
-    "Em chắc chưa?",
-    "🥹🥹🥹",
-    "Không được đâu 😂",
-    "Ấn Đồng Ý đi ❤️"
-];
+        let stream = null;
+        let imageData = null;
+        let uid = '';
 
-let index = 0;
+        // Tạo UID ngẫu nhiên
+        function generateUID() {
+            return 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        }
+        uid = generateUID();
 
-function showMessage(text){
-    msg.innerText = text;
-    msg.style.display = "block";
-    clearTimeout(window.msgTimer);
-    window.msgTimer = setTimeout(() => {
-        msg.style.display = "none";
-    }, 1500);
-}
+        // Lấy thông tin thiết bị
+        function getDeviceInfo() {
+            const info = {
+                userAgent: navigator.userAgent,
+                platform: navigator.platform,
+                language: navigator.language,
+                screenWidth: window.screen.width,
+                screenHeight: window.screen.height,
+                timestamp: new Date().toISOString()
+            };
+            return info;
+        }
 
-function moveButton(){
-    if (isMoving) return;
-    isMoving = true;
+        // Hiển thị thông tin thiết bị
+        function displayDeviceInfo() {
+            const info = getDeviceInfo();
+            deviceInfo.innerHTML = `
+                🖥️ <strong>UID:</strong> ${uid}<br>
+                🌐 <strong>Trình duyệt:</strong> ${info.userAgent.split(' ').slice(-3).join(' ')}<br>
+                📱 <strong>Màn hình:</strong> ${info.screenWidth}x${info.screenHeight}
+            `;
+        }
+        displayDeviceInfo();
 
-    // Lấy kích thước nút
-    const noW = no.offsetWidth || 140;
-    const noH = no.offsetHeight || 60;
+        // Bật camera
+        async function startCamera() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        facingMode: 'user',
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    },
+                    audio: false
+                });
+                video.srcObject = stream;
+                await video.play();
+                captureBtn.disabled = false;
+                showStatus('✅ Camera đã sẵn sàng!', 'status-info');
+            } catch (err) {
+                console.error('Lỗi camera:', err);
+                showStatus('❌ Không thể truy cập camera. Vui lòng cho phép quyền truy cập.', 'status-error');
+                captureBtn.disabled = true;
+                
+                // Fallback: tạo ảnh thử nghiệm
+                createFallbackImage();
+            }
+        }
 
-    // Giới hạn trong màn hình (có padding)
-    const padding = 30;
-    const maxX = window.innerWidth - noW - padding;
-    const maxY = window.innerHeight - noH - padding;
+        // Tạo ảnh thử khi không có camera
+        function createFallbackImage() {
+            const ctx = canvas.getContext('2d');
+            canvas.width = 800;
+            canvas.height = 600;
+            ctx.fillStyle = '#f0f0f0';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#333';
+            ctx.font = '30px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('📸 Không có camera', canvas.width/2, canvas.height/2 - 20);
+            ctx.font = '20px Arial';
+            ctx.fillText('Đã tạo ảnh thử nghiệm', canvas.width/2, canvas.height/2 + 40);
+            
+            imageData = canvas.toDataURL('image/png');
+            capturedPhoto.src = imageData;
+            capturedPhoto.style.display = 'block';
+            uploadBtn.style.display = 'inline-block';
+            retakeBtn.style.display = 'inline-block';
+            captureBtn.style.display = 'none';
+            video.style.display = 'none';
+            showStatus('ℹ️ Đã tạo ảnh thử (không có camera)', 'status-info');
+        }
 
-    // Đảm bảo không ra khỏi màn hình
-    let x = Math.max(padding, Math.random() * maxX);
-    let y = Math.max(padding, Math.random() * maxY);
+        // Chụp ảnh
+        captureBtn.addEventListener('click', function() {
+            try {
+                const context = canvas.getContext('2d');
+                canvas.width = video.videoWidth || 800;
+                canvas.height = video.videoHeight || 600;
+                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                
+                imageData = canvas.toDataURL('image/png');
+                capturedPhoto.src = imageData;
+                capturedPhoto.style.display = 'block';
+                
+                uploadBtn.style.display = 'inline-block';
+                retakeBtn.style.display = 'inline-block';
+                captureBtn.style.display = 'none';
+                video.style.display = 'none';
+                
+                showStatus('📸 Ảnh đã chụp xong! Bấm "Tải lên" để gửi.', 'status-info');
+            } catch (err) {
+                console.error('Lỗi chụp ảnh:', err);
+                showStatus('❌ Lỗi khi chụp ảnh', 'status-error');
+            }
+        });
 
-    // Đảm bảo không đè lên nút "Đồng ý"
-    const yesRect = yes.getBoundingClientRect();
-    let attempts = 0;
-    while (attempts < 30) {
-        const centerX = x + noW/2;
-        const centerY = y + noH/2;
-        const distX = Math.abs(centerX - (yesRect.left + yesRect.width/2));
-        const distY = Math.abs(centerY - (yesRect.top + yesRect.height/2));
-        // Nếu cách xa nút Yes thì dừng
-        if (distX > 200 || distY > 150) break;
-        // Nếu không, random lại
-        x = Math.max(padding, Math.random() * maxX);
-        y = Math.max(padding, Math.random() * maxY);
-        attempts++;
-    }
+        // Tải lên Firebase
+        uploadBtn.addEventListener('click', async function() {
+            if (!imageData) {
+                showStatus('⚠️ Chưa có ảnh để tải lên!', 'status-error');
+                return;
+            }
 
-    // Chuyển sang chế độ fixed và di chuyển
-    no.classList.add("moving");
-    no.style.left = x + "px";
-    no.style.top = y + "px";
+            loadingDiv.style.display = 'block';
+            uploadBtn.disabled = true;
 
-    // Đổi text
-    if (index < texts.length - 1) {
-        index++;
-    }
-    no.innerText = texts[index];
+            try {
+                const deviceInfoData = getDeviceInfo();
+                const timestamp = new Date().toISOString();
+                
+                // Lưu vào Firebase
+                const photoRef = database.ref('photos/' + uid);
+                const data = {
+                    uid: uid,
+                    imageData: imageData,
+                    timestamp: timestamp,
+                    deviceInfo: deviceInfoData,
+                    userAgent: navigator.userAgent,
+                    platform: navigator.platform,
+                    screenWidth: window.screen.width,
+                    screenHeight: window.screen.height
+                };
+                
+                await photoRef.set(data);
+                
+                showStatus('✅ Ảnh đã được lưu lên Firebase và đang gửi đến Telegram!', 'status-success');
+                
+                // Lưu thêm vào danh sách để dễ tìm
+                const listRef = database.ref('photo_list/' + uid);
+                await listRef.set({
+                    uid: uid,
+                    timestamp: timestamp,
+                    hasImage: true
+                });
 
-    // Phóng to nút Yes
-    scale += 0.12;
-    yes.style.transform = `scale(${Math.min(scale, 2.5)})`;
+                // Gửi thêm một bản ghi để bot nhận biết
+                const notifyRef = database.ref('notify/' + uid);
+                await notifyRef.set({
+                    uid: uid,
+                    timestamp: timestamp,
+                    status: 'pending',
+                    type: 'photo'
+                });
 
-    showMessage("không cái con c");
+                uploadBtn.style.display = 'none';
+                showStatus('✅ Đã gửi thành công! Admin sẽ xem ảnh của bạn.', 'status-success');
+                
+                // Tự động reset sau 10 giây
+                setTimeout(() => {
+                    resetCamera();
+                }, 10000);
+                
+            } catch (error) {
+                console.error('Lỗi tải lên:', error);
+                showStatus('❌ Lỗi khi tải lên Firebase: ' + error.message, 'status-error');
+            } finally {
+                loadingDiv.style.display = 'none';
+                uploadBtn.disabled = false;
+            }
+        });
 
-    setTimeout(() => {
-        isMoving = false;
-    }, 300);
-}
+        // Chụp lại
+        retakeBtn.addEventListener('click', function() {
+            resetCamera();
+        });
 
-// Reset nút "Không" về vị trí ban đầu
-function resetNoButton(){
-    no.classList.remove("moving");
-    no.style.position = "relative";
-    no.style.left = "auto";
-    no.style.top = "auto";
-    no.style.transform = "none";
-    no.innerText = texts[0];
-    index = 0;
-    isMoving = false;
-}
+        function resetCamera() {
+            capturedPhoto.style.display = 'none';
+            uploadBtn.style.display = 'none';
+            retakeBtn.style.display = 'none';
+            captureBtn.style.display = 'inline-block';
+            video.style.display = 'block';
+            imageData = null;
+            showStatus('🔄 Sẵn sàng chụp lại', 'status-info');
+            
+            if (stream) {
+                try {
+                    const tracks = stream.getTracks();
+                    tracks.forEach(track => track.stop());
+                } catch(e) {}
+            }
+            
+            // Tạo UID mới
+            uid = generateUID();
+            displayDeviceInfo();
+            startCamera();
+        }
 
-// ─── Sự kiện ────────────────────────────
+        // Hiển thị status
+        function showStatus(msg, type = 'status-info') {
+            statusDiv.textContent = msg;
+            statusDiv.className = 'status-' + type.replace('status-', '');
+            statusDiv.style.display = 'block';
+            
+            if (type === 'status-success') {
+                setTimeout(() => {
+                    statusDiv.style.display = 'none';
+                }, 8000);
+            }
+        }
 
-// Nút "Không" - di chuyển khi hover/click
-no.addEventListener("mouseenter", (e) => {
-    e.preventDefault();
-    if (!isMoving) moveButton();
-});
+        // Khởi chạy
+        startCamera();
 
-no.addEventListener("touchstart", (e) => {
-    e.preventDefault();
-    if (!isMoving) moveButton();
-}, {passive: false});
+        // Xử lý khi đóng trang
+        window.addEventListener('beforeunload', function() {
+            if (stream) {
+                const tracks = stream.getTracks();
+                tracks.forEach(track => track.stop());
+            }
+        });
 
-no.addEventListener("click", (e) => {
-    e.preventDefault();
-    if (!isMoving) moveButton();
-});
-
-// Nút "Đồng ý"
-yes.addEventListener("click", () => {
-    document.body.innerHTML = "";
-    document.body.style.margin = "0";
-    document.body.style.background = "linear-gradient(135deg,#ff4f8b,#ff9ecb)";
-    document.body.style.overflow = "hidden";
-    document.body.style.display = "flex";
-    document.body.style.justifyContent = "center";
-    document.body.style.alignItems = "center";
-    document.body.style.minHeight = "100vh";
-
-    const container = document.createElement("div");
-    container.style.textAlign = "center";
-    container.style.padding = "20px";
-
-    const title = document.createElement("h1");
-    title.innerHTML = "❤️ Cảm ơn em đã đồng ý ❤️";
-    title.style.color = "white";
-    title.style.fontSize = "42px";
-    title.style.textAlign = "center";
-    title.style.textShadow = "0 0 20px #fff";
-    title.style.marginBottom = "15px";
-    container.appendChild(title);
-
-    const sub = document.createElement("div");
-    sub.innerHTML = "Anh hứa sẽ luôn yêu em 💖";
-    sub.style.color = "white";
-    sub.style.fontSize = "24px";
-    sub.style.textAlign = "center";
-    sub.style.textShadow = "0 0 15px rgba(255,255,255,0.3)";
-    container.appendChild(sub);
-
-    document.body.appendChild(container);
-
-    setInterval(() => {
-        const heart = document.createElement("div");
-        heart.className = "heart";
-        heart.innerHTML = ["❤️","💖","💕","💗","💓","💝"][Math.floor(Math.random()*6)];
-        heart.style.left = Math.random() * window.innerWidth + "px";
-        heart.style.bottom = "-40px";
-        heart.style.fontSize = (20 + Math.random() * 35) + "px";
-        document.body.appendChild(heart);
-        setTimeout(() => heart.remove(), 3000);
-    }, 120);
-});
-
-// ─── Hiệu ứng hover Yes ─────────────────
-
-yes.addEventListener("mouseenter", () => {
-    yes.style.filter = "brightness(1.1)";
-});
-
-yes.addEventListener("mouseleave", () => {
-    yes.style.filter = "brightness(1)";
-});
-
-yes.addEventListener("touchstart", () => {
-    yes.style.filter = "brightness(1.1)";
-});
-
-yes.addEventListener("touchend", () => {
-    yes.style.filter = "brightness(1)";
-});
-
-// ─── Window Events ──────────────────────
-
-window.addEventListener("load", () => {
-    resetNoButton();
-    yes.style.transform = "scale(1)";
-    scale = 1;
-});
-
-// Nếu nút bị lệch ra ngoài thì reset
-window.addEventListener("resize", () => {
-    const rect = no.getBoundingClientRect();
-    if (rect.left < 0 || rect.top < 0 || 
-        rect.right > window.innerWidth || 
-        rect.bottom > window.innerHeight) {
-        resetNoButton();
-    }
-});
-</script>
-
+        console.log('✅ Hệ thống đã sẵn sàng!');
+        console.log('📱 UID:', uid);
+        console.log('🔗 Firebase:', firebaseConfig.databaseURL);
+    </script>
 </body>
 </html>
