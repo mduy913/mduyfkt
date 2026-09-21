@@ -2,271 +2,352 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<title>HackMe — Bài tập bảo mật</title>
+<title>HackMe — 8 thử thách</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
-  * { box-sizing: border-box; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   body {
-    font-family: 'Courier New', monospace;
+    font-family: -apple-system, system-ui, monospace;
     background: #0a0e1a; color: #b8c5d6;
-    max-width: 900px; margin: 20px auto; padding: 16px;
-    line-height: 1.6;
+    margin: 0; padding: 16px; line-height: 1.6; font-size: 15px;
   }
-  h1 { color: #4ade80; border-bottom: 2px solid #1e293b; padding-bottom: 10px; }
-  h2 { color: #60a5fa; margin-top: 32px; }
-  .panel {
-    background: #111827; border: 1px solid #1e293b;
-    border-radius: 8px; padding: 16px; margin: 16px 0;
+  h1 { color: #4ade80; font-size: 20px; margin: 0 0 8px; }
+  h2 { color: #60a5fa; font-size: 16px; margin-top: 28px; margin-bottom: 8px; }
+  .panel { background: #111827; border-radius: 10px; padding: 14px; margin: 10px 0; }
+  input, button, select {
+    font-family: inherit; font-size: 15px; padding: 12px 14px;
+    border-radius: 8px; border: 1px solid #334155; background: #1e293b;
+    color: #e2e8f0; width: 100%; margin: 6px 0;
   }
-  input, button {
-    font-family: inherit; font-size: 14px;
-    padding: 10px 14px; border-radius: 6px;
-    border: 1px solid #334155; background: #1e293b;
-    color: #e2e8f0;
-  }
-  input:focus { outline: 2px solid #4ade80; }
-  button { cursor: pointer; background: #2563eb; border: none; color: white; }
-  button:hover { background: #1d4ed8; }
+  button { background: #2563eb; border: none; color: white; cursor: pointer; font-weight: 600; }
+  button:active { background: #1d4ed8; }
   button.hint { background: #ca8a04; }
-  button.hint:hover { background: #a16207; }
-  #hintBox {
-    background: #1c1917; border-left: 4px solid #facc15;
-    padding: 12px 16px; margin: 16px 0; border-radius: 6px;
-    display: none; white-space: pre-wrap;
-  }
-  #hintBox.show { display: block; }
-  #hintBox.level1 { border-left-color: #facc15; }
-  #hintBox.level2 { border-left-color: #fb923c; }
-  #hintBox.level3 { border-left-color: #ef4444; }
-  .result { margin-top: 10px; padding: 10px; border-radius: 6px; font-size: 13px; }
+  button.hint:active { background: #a16207; }
+  .result { margin-top: 10px; padding: 12px; border-radius: 8px; font-size: 14px; word-break: break-word; min-height: 0; }
   .result.ok { background: #052e16; color: #4ade80; }
   .result.fail { background: #450a0a; color: #f87171; }
-  .flag {
-    background: #052e16; color: #4ade80; padding: 4px 8px;
-    border-radius: 4px; font-weight: bold;
-  }
-  code { background: #1e293b; padding: 2px 6px; border-radius: 4px; color: #fbbf24; }
-  .hidden { display: none !important; }
+  .result:empty { display: none; }
+  .flag { background: #052e16; color: #4ade80; padding: 4px 8px; border-radius: 4px; font-weight: bold; display: inline-block; margin-top: 6px; font-size: 13px; font-family: monospace; }
+  code { background: #1e293b; padding: 3px 6px; border-radius: 4px; color: #fbbf24; font-size: 13px; word-break: break-all; font-family: monospace; }
+  #hintBox { background: #1c1917; border-left: 4px solid #facc15; padding: 14px; margin: 16px 0; border-radius: 8px; display: none; white-space: pre-wrap; font-size: 13px; }
+  #hintBox.show { display: block; }
+  #hintBox.lv2 { border-left-color: #fb923c; }
+  #hintBox.lv3 { border-left-color: #ef4444; }
   .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #1e293b; font-size: 12px; color: #64748b; }
-  .hintControls { display: flex; gap: 8px; margin: 8px 0; flex-wrap: wrap; }
+  .progress {
+    position: sticky; top: 0; z-index: 10;
+    background: #0a0e1a; padding: 10px 0;
+    text-align: center; color: #4ade80; font-weight: bold;
+    font-size: 14px; border-bottom: 1px solid #1e293b;
+  }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .hintBtns { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin: 8px 0; }
+  .hintBtns button { font-size: 13px; padding: 10px 6px; }
 </style>
 </head>
 <body>
 
-<h1>🔐 HackMe — Bài tập khai thác bảo mật</h1>
-<p>Mục tiêu: tìm được <strong>4 flag</strong> ẩn trong trang này. Mỗi flag có dạng <code>FLAG{...}</code>.</p>
+<div class="progress" id="progress">🏆 Đã tìm: 0/8 flag</div>
 
-<div class="hintControls">
-  <button class="hint" onclick="showHint(1)">🔍 Gợi ý mức 1 (nhẹ)</button>
-  <button class="hint" onclick="showHint(2)">🔍 Gợi ý mức 2 (vừa)</button>
-  <button class="hint" onclick="showHint(3)">🔍 Gợi ý mức 3 (rõ)</button>
-  <button onclick="clearHint()">✖ Đóng gợi ý</button>
+<h1>🔐 HackMe — 8 thử thách</h1>
+<p style="font-size:13px;color:#94a3b8">Không cần PC. Không cần DevTools. Mọi gợi ý đều có sẵn.</p>
+
+<div class="hintBtns">
+  <button class="hint" onclick="showHint(1)">💡 Mức 1</button>
+  <button class="hint" onclick="showHint(2)">💡 Mức 2</button>
+  <button class="hint" onclick="showHint(3)">💡 Mức 3</button>
 </div>
 <div id="hintBox"></div>
 
-<!-- ============ THỬ THÁCH 1: XSS ============ -->
-<h2>Thử thách 1 — Reflected XSS</h2>
+<!-- ============ 1. XSS ============ -->
+<h2>1️⃣ XSS — Reflected</h2>
 <div class="panel">
-  <p>Nhập tên của bạn để được chào:</p>
-  <input id="nameInput" placeholder="Tên của bạn..." autocomplete="off">
-  <button onclick="greet()">Chào</button>
-  <div id="greetResult" class="result"></div>
-  <p style="font-size:12px;color:#64748b">Flag 1: khai thác input để chạy JavaScript. Khi thành công, flag sẽ hiện.</p>
+  <input id="n1" placeholder="Nhập tên của bạn" autocomplete="off">
+  <button onclick="c1()">Chào</button>
+  <div id="r1" class="result"></div>
 </div>
 
-<!-- ============ THỬ THÁCH 2: IDOR ============ -->
-<h2>Thử thách 2 — IDOR (Insecure Direct Object Reference)</h2>
+<!-- ============ 2. IDOR ============ -->
+<h2>2️⃣ IDOR — Đoán ID</h2>
 <div class="panel">
-  <p>Xem hồ sơ người dùng bằng ID:</p>
-  <input id="userId" placeholder="User ID (số)" value="1" autocomplete="off">
-  <button onclick="loadProfile()">Xem hồ sơ</button>
-  <div id="profileResult" class="result"></div>
-  <p style="font-size:12px;color:#64748b">Flag 2: có 1 user ẩn chứa flag. Tìm ID của user đó.</p>
+  <input id="n2" type="number" placeholder="User ID (1-500)" autocomplete="off">
+  <button onclick="c2()">Xem hồ sơ</button>
+  <div id="r2" class="result"></div>
 </div>
 
-<!-- ============ THỬ THÁCH 3: LocalStorage ============ -->
-<h2>Thử thách 3 — Secret trong LocalStorage</h2>
+<!-- ============ 3. Weak password ============ -->
+<h2>3️⃣ Mật khẩu yếu</h2>
 <div class="panel">
-  <p>Ứng dụng này có "token" bí mật lưu trong LocalStorage.</p>
-  <button onclick="checkToken()">Kiểm tra token</button>
-  <div id="tokenResult" class="result"></div>
-  <p style="font-size:12px;color:#64748b">Flag 3: mở DevTools → Application → Local Storage → tìm token.</p>
+  <input id="n3" placeholder="Mật khẩu admin" autocomplete="off">
+  <button onclick="c3()">Đăng nhập</button>
+  <div id="r3" class="result"></div>
 </div>
 
-<!-- ============ THỬ THÁCH 4: Source Code ============ -->
-<h2>Thử thách 4 — Comment trong source</h2>
+<!-- ============ 4. Hold button ============ -->
+<h2>4️⃣ Nhấn giữ nút</h2>
 <div class="panel">
-  <p>Có một flag ẩn trong HTML source, nhưng không được render ra trang.</p>
-  <button onclick="checkSource()">Xác nhận đã tìm thấy</button>
-  <div id="sourceResult" class="result"></div>
-  <p style="font-size:12px;color:#64748b">Flag 4: xem source HTML (Ctrl+U hoặc F12 → Elements), tìm comment chứa flag.</p>
+  <button id="holdBtn"
+          onmousedown="holdStart()" onmouseup="holdEnd()" onmouseleave="holdEnd()"
+          ontouchstart="holdStart(event)" ontouchend="holdEnd()"
+          style="user-select:none;-webkit-user-select:none;touch-action:none">
+    👆 Nhấn giữ 1 giây
+  </button>
+  <div id="r4" class="result"></div>
+</div>
+
+<!-- ============ 5. Math ============ -->
+<h2>5️⃣ Tính toán bí mật</h2>
+<div class="panel">
+  <p style="font-size:13px">Số bí mật = (7 × 6) + (100 ÷ 4) − 13. Nhập kết quả:</p>
+  <input id="n5" type="number" placeholder="Kết quả" autocomplete="off">
+  <button onclick="c5()">Kiểm tra</button>
+  <div id="r5" class="result"></div>
+</div>
+
+<!-- ============ 6. Base64 ============ -->
+<h2>6️⃣ Giải mã chuỗi</h2>
+<div class="panel">
+  <p style="font-size:13px">Chuỗi bí mật (Base64):</p>
+  <code style="display:block;padding:10px;margin:6px 0">RkxBR3tiYXNlNjRfaXNfbm90X2VuY3J5cHRpb259</code>
+  <input id="n6" placeholder="Nhập chuỗi đã giải mã" autocomplete="off">
+  <button onclick="c6()">Kiểm tra</button>
+  <div id="r6" class="result"></div>
+</div>
+
+<!-- ============ 7. SQLi giả lập ============ -->
+<h2>7️⃣ SQL Injection (giả lập)</h2>
+<div class="panel">
+  <p style="font-size:13px">Đăng nhập admin bằng cách bypass câu truy vấn SQL.</p>
+  <input id="n7u" placeholder="Username" autocomplete="off">
+  <input id="n7p" placeholder="Password" autocomplete="off">
+  <button onclick="c7()">Đăng nhập</button>
+  <div id="r7" class="result"></div>
+</div>
+
+<!-- ============ 8. Pattern ============ -->
+<h2>8️⃣ Đoán quy luật</h2>
+<div class="panel">
+  <p style="font-size:13px">Dãy số: 2, 3, 5, 7, 11, 13, ?</p>
+  <input id="n8" type="number" placeholder="Số tiếp theo" autocomplete="off">
+  <button onclick="c8()">Trả lời</button>
+  <div id="r8" class="result"></div>
 </div>
 
 <div class="footer">
-  HackMe v1.0 — bài tập học tập. Không dùng vào mục đích thật.
-  <br>Đây là môi trường giả lập, mọi flag là giả, không có hệ thống nào bị ảnh hưởng.
+  HackMe v2 — bài tập học tập. Mọi flag là giả, không ảnh hưởng hệ thống nào.
 </div>
 
-<!-- FLAG{comment_source_hidden_2024} -->
-
 <script>
-/* ============================================================
-   THỬ THÁCH 1 — Reflected XSS (cố tình dùng innerHTML)
-   ============================================================ */
-function greet() {
-  const name = document.getElementById("nameInput").value;
-  const box = document.getElementById("greetResult");
+/* ========== HỆ THỐNG ĐẾM FLAG ========== */
+const found = new Set();
+function markFlag(n) {
+  found.add(n);
+  document.getElementById("progress").textContent =
+    "🏆 Đã tìm: " + found.size + "/8 flag" + (found.size === 8 ? " 🎉 HOÀN THÀNH!" : "");
+}
 
-  // LỖ HỔNG CỐ Ý: dùng innerHTML thay vì textContent
-  box.innerHTML = "Xin chào, " + name + "!";
+/* ========== 1. XSS ========== */
+function c1() {
+  const v = document.getElementById("n1").value;
+  const b = document.getElementById("r1");
+  b.innerHTML = "Xin chào, " + v + "!";
+  b.className = "result";
+  if (/<img[^>]*onerror|<svg[^>]*onload|<script|javascript:|<iframe/i.test(v)) {
+    b.innerHTML += '<br><span class="flag">FLAG{xss_reflected_ok}</span>';
+    b.className = "result ok";
+    markFlag(1);
+  }
+}
 
-  // Nếu có thẻ <img onerror> hoặc <svg onload> → flag
-  if (/<img[^>]*onerror|<svg[^>]*onload|<script/i.test(name)) {
-    box.innerHTML += '<br><span class="flag">FLAG{xss_innerHTML_1st}</span>';
-    box.className = "result ok";
+/* ========== 2. IDOR ========== */
+const USERS = {};
+for (let i = 1; i <= 500; i++) USERS[i] = { name: "User " + i, role: "user" };
+USERS[313] = { name: "admin_ẩn", role: "admin", secret: "FLAG{idor_id_313}" };
+
+function c2() {
+  const id = document.getElementById("n2").value;
+  const b = document.getElementById("r2");
+  const u = USERS[id];
+  if (!u) { b.textContent = "ID không tồn tại"; b.className = "result fail"; return; }
+  b.innerHTML = "ID: " + id + "<br>Tên: " + u.name + "<br>Vai trò: " + u.role;
+  b.className = "result";
+  if (u.secret) {
+    b.innerHTML += '<br><span class="flag">' + u.secret + '</span>';
+    b.className = "result ok";
+    markFlag(2);
+  }
+}
+
+/* ========== 3. Mật khẩu yếu ========== */
+function c3() {
+  const p = document.getElementById("n3").value.toLowerCase().trim();
+  const b = document.getElementById("r3");
+  const weak = ["admin", "123456", "password", "12345678", "qwerty", "abc123", "letmein"];
+  if (weak.includes(p)) {
+    b.innerHTML = "✅ Đăng nhập thành công!<br><span class='flag'>FLAG{weak_password_" + p + "}</span>";
+    b.className = "result ok";
+    markFlag(3);
   } else {
-    box.className = "result";
+    b.textContent = "❌ Sai. Thử các mật khẩu phổ biến nhất.";
+    b.className = "result fail";
   }
 }
 
-/* ============================================================
-   THỬ THÁCH 2 — IDOR (cố tình để lộ user ẩn)
-   ============================================================ */
-const USERS = {
-  "1": { name: "Nguyễn Văn A", role: "user" },
-  "2": { name: "Trần Thị B", role: "user" },
-  "3": { name: "Lê Văn C", role: "user" },
-  "42": { name: "Admin", role: "admin", secret: "FLAG{idor_hidden_id_42}" },
-  "999": { name: "root", role: "superadmin" }
-};
+/* ========== 4. Hold ========== */
+let holdTimer = null;
+function holdStart(e) {
+  if (e && e.cancelable) e.preventDefault();
+  holdTimer = setTimeout(() => {
+    const b = document.getElementById("r4");
+    b.innerHTML = "⏱ Giữ đủ lâu!<br><span class='flag'>FLAG{hold_button_1s}</span>";
+    b.className = "result ok";
+    markFlag(4);
+  }, 1000);
+}
+function holdEnd() {
+  if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
+}
 
-function loadProfile() {
-  const id = document.getElementById("userId").value.trim();
-  const box = document.getElementById("profileResult");
-  const user = USERS[id];
-
-  if (!user) {
-    box.textContent = "Không tìm thấy user với ID " + id;
-    box.className = "result fail";
-    return;
-  }
-
-  box.innerHTML = "ID: " + id + "<br>Tên: " + user.name + "<br>Vai trò: " + user.role;
-  if (user.secret) {
-    box.innerHTML += '<br><span class="flag">' + user.secret + '</span>';
-    box.className = "result ok";
+/* ========== 5. Math ========== */
+function c5() {
+  const v = parseInt(document.getElementById("n5").value);
+  const b = document.getElementById("r5");
+  if (v === 54) {
+    b.innerHTML = "✅ Chính xác!<br><span class='flag'>FLAG{math_54}</span>";
+    b.className = "result ok";
+    markFlag(5);
   } else {
-    box.className = "result";
+    b.textContent = "❌ Sai. (7×6=42) + (100÷4=25) − 13 = ?";
+    b.className = "result fail";
   }
 }
 
-/* ============================================================
-   THỬ THÁCH 3 — Secret trong LocalStorage
-   ============================================================ */
-localStorage.setItem("app_token", "eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoiZ3Vlc3QifQ");
-localStorage.setItem("admin_secret", "FLAG{localstorage_is_not_secure}");
-localStorage.setItem("cart", JSON.stringify([{ id: 1, price: 100 }]));
-
-function checkToken() {
-  const box = document.getElementById("tokenResult");
-  const secret = localStorage.getItem("admin_secret");
-  if (secret && secret.startsWith("FLAG{")) {
-    box.innerHTML = 'Đã tìm thấy trong LocalStorage:<br><span class="flag">' + secret + '</span>';
-    box.className = "result ok";
+/* ========== 6. Base64 ========== */
+function c6() {
+  const v = document.getElementById("n6").value.trim();
+  const b = document.getElementById("r6");
+  if (v === "FLAG{base64_is_not_encryption}") {
+    b.innerHTML = "✅ Giải mã đúng!<br><span class='flag'>FLAG{base64_is_not_encryption}</span>";
+    b.className = "result ok";
+    markFlag(6);
   } else {
-    box.textContent = "Chưa tìm thấy. Mở DevTools → Application → Local Storage.";
-    box.className = "result fail";
+    b.textContent = "❌ Chưa đúng. Thử decode bằng base64decode.org hoặc app.";
+    b.className = "result fail";
   }
 }
 
-/* ============================================================
-   THỬ THÁCH 4 — Comment trong source
-   ============================================================ */
-function checkSource() {
-  const box = document.getElementById("sourceResult");
-  box.innerHTML = 'Flag nằm trong comment HTML. Xem source:<br><span class="flag">FLAG{comment_source_hidden_2024}</span>';
-  box.className = "result ok";
+/* ========== 7. SQLi ========== */
+function c7() {
+  const u = document.getElementById("n7u").value;
+  const p = document.getElementById("n7p").value;
+  const b = document.getElementById("r7");
+
+  // Giả lập câu truy vấn: SELECT * FROM users WHERE user='...' AND pass='...'
+  const sqli = /('|"|--|\/\*|or\s+1\s*=\s*1|'\s*or\s*'1'='1)/i.test(u) ||
+               /('|"|--|\/\*)/i.test(p) ||
+               u.toLowerCase().includes("or 1=1") ||
+               p.toLowerCase().includes("or 1=1");
+
+  if (sqli) {
+    b.innerHTML = "💉 SQL Injection thành công!<br><span class='flag'>FLAG{sqli_bypass_login}</span>";
+    b.className = "result ok";
+    markFlag(7);
+  } else if (u === "admin" && p === "admin123") {
+    b.textContent = "Đăng nhập thành công (nhưng chưa phải SQLi).";
+    b.className = "result";
+  } else {
+    b.textContent = "❌ Sai. Thử payload SQLi: admin' -- hoặc ' OR 1=1 --";
+    b.className = "result fail";
+  }
 }
 
-/* ============================================================
-   HỆ THỐNG GỢI Ý
-   ============================================================ */
+/* ========== 8. Pattern ========== */
+function c8() {
+  const v = parseInt(document.getElementById("n8").value);
+  const b = document.getElementById("r8");
+  if (v === 17) {
+    b.innerHTML = "✅ Đúng! (số nguyên tố tiếp theo)<br><span class='flag'>FLAG{prime_17}</span>";
+    b.className = "result ok";
+    markFlag(8);
+  } else {
+    b.textContent = "❌ Sai. Đây là dãy số nguyên tố.";
+    b.className = "result fail";
+  }
+}
+
+/* ========== GỢI Ý ========== */
 const HINTS = {
   1: {
-    title: "🟡 GỢI Ý MỨC 1 — Định hướng chung",
-    body:
-`Bài này có 4 lỗ hổng, mỗi cái thuộc 1 dạng khác nhau:
+    cls: "lv1",
+    text:
+`🟡 GỢI Ý MỨC 1 — hướng đi chung
 
-1. XSS — dữ liệu người dùng nhập vào không được escape đúng cách
-2. IDOR — truy cập thẳng vào object bằng ID, không kiểm tra quyền
-3. LocalStorage — dữ liệu "bí mật" lưu client-side
-4. Source comment — thông tin ẩn trong HTML
-
-Công cụ cần: trình duyệt + DevTools (F12).
-
-Bấm "Gợi ý mức 2" nếu cần chỉ rõ hơn từng bước.`
+1. XSS — nhập HTML/JS vào ô text
+2. IDOR — đoán ID số
+3. Mật khẩu — thử các mật khẩu yếu phổ biến
+4. Nhấn giữ nút — thao tác giữ ngón tay
+5. Toán — tính đúng công thức
+6. Base64 — giải mã chuỗi
+7. SQLi — chèn ký tự đặc biệt vào form login
+8. Dãy số — nhận diện quy luật`
   },
   2: {
-    title: "🟠 GỢI Ý MỨC 2 — Hướng dẫn từng thử thách",
-    body:
-`THỬ THÁCH 1 (XSS):
-- Nhập vào ô tên: <img src=x onerror=alert(1)>
-- Nhấn "Chào" — nếu thấy alert() hiện ra → đã khai thác thành công
-- Flag sẽ xuất hiện sau khi payload đúng
+    cls: "lv2",
+    text:
+`🟠 GỢI Ý MỨC 2 — chi tiết hơn
 
-THỬ THÁCH 2 (IDOR):
-- Thử các ID từ 1-100
-- Có 1 ID đặc biệt (không phải 1,2,3) chứa flag
-- Đọc kỹ source code JavaScript để thấy danh sách USERS
-
-THỬ THÁCH 3 (LocalStorage):
-- F12 → Application → Storage → Local Storage
-- Tìm key có tên "admin_secret"
-- Sau đó bấm nút "Kiểm tra token" để xác nhận
-
-THỬ THÁCH 4 (Source):
-- Ctrl+U (xem source) hoặc F12 → Elements
-- Kéo xuống cuối file HTML
-- Tìm comment <!-- ... --> chứa FLAG`
+1. Payload: <img src=x onerror=alert(1)>
+2. Thử ID ngẫu nhiên trong khoảng 200-400
+3. Mật khẩu yếu top đầu thế giới: admin, 123456, password
+4. Nhấn và giữ ngón tay trên nút ít nhất 1 giây
+5. (7×6) + (100÷4) − 13 = 42 + 25 − 13
+6. Chuỗi Base64 → dùng base64decode.org
+7. Payload SQLi: admin' -- hoặc ' OR 1=1 --
+8. Dãy: 2,3,5,7,11,13,... là gì?`
   },
   3: {
-    title: "🔴 GỢI Ý MỨC 3 — Đáp án",
-    body:
-`THỬ THÁCH 1 (XSS):
-Payload: <img src=x onerror=alert(1)>
-Hoặc: <svg onload=alert(1)>
-→ FLAG{xss_innerHTML_1st}
+    cls: "lv3",
+    text:
+`🔴 GỢI Ý MỨC 3 — ĐÁP ÁN
 
-THỬ THÁCH 2 (IDOR):
-Nhập User ID = 42
-→ FLAG{idor_hidden_id_42}
+1. FLAG{xss_reflected_ok}
+   Payload: <img src=x onerror=alert(1)>
 
-THỬ THÁCH 3 (LocalStorage):
-Key "admin_secret" = FLAG{localstorage_is_not_secure}
-→ FLAG{localstorage_is_not_secure}
+2. FLAG{idor_id_313}
+   ID cần nhập: 313
 
-THỬ THÁCH 4 (Source comment):
-Xem cuối file HTML, dòng <!-- FLAG{...} -->
-→ FLAG{comment_source_hidden_2024}
+3. FLAG{weak_password_admin}
+   Mật khẩu: admin (hoặc 123456)
 
-XONG CẢ 4 FLAG! 🎉`
+4. FLAG{hold_button_1s}
+   Nhấn giữ nút 1 giây
+
+5. FLAG{math_54}
+   Kết quả: 54
+
+6. FLAG{base64_is_not_encryption}
+   Giải mã chuỗi Base64 đã cho
+
+7. FLAG{sqli_bypass_login}
+   Username: admin' --
+   Hoặc: ' OR 1=1 --
+
+8. FLAG{prime_17}
+   Số tiếp theo: 17`
   }
 };
 
 let currentLevel = 0;
-
 function showHint(level) {
-  const box = document.getElementById("hintBox");
+  const b = document.getElementById("hintBox");
   const h = HINTS[level];
-  box.innerHTML = "<strong>" + h.title + "</strong>\n\n" + h.body;
-  box.className = "show level" + level;
+  b.textContent = h.text;
+  b.className = "show " + h.cls;
   currentLevel = level;
 }
 
-function clearHint() {
-  document.getElementById("hintBox").className = "";
-  currentLevel = 0;
-}
+/* ========== KHỞI TẠO ========== */
+console.log("%c🔐 HackMe — Mở Console làm gì? Không có flag ở đây đâu 😉", "color:#4ade80;font-size:14px");
 </script>
 </body>
 </html>
