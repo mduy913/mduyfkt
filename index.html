@@ -2,352 +2,376 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<title>HackMe — 8 thử thách</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🔥 Flood Monitor — DarkStack</title>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
-  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
-    font-family: -apple-system, system-ui, monospace;
-    background: #0a0e1a; color: #b8c5d6;
-    margin: 0; padding: 16px; line-height: 1.6; font-size: 15px;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: #0a0e1a; color: #e6edf3;
+    min-height: 100vh; padding: 20px;
+    background-image:
+      radial-gradient(circle at 20% 10%, rgba(255,0,128,.08), transparent 40%),
+      radial-gradient(circle at 80% 90%, rgba(0,200,255,.08), transparent 40%);
   }
-  h1 { color: #4ade80; font-size: 20px; margin: 0 0 8px; }
-  h2 { color: #60a5fa; font-size: 16px; margin-top: 28px; margin-bottom: 8px; }
-  .panel { background: #111827; border-radius: 10px; padding: 14px; margin: 10px 0; }
-  input, button, select {
-    font-family: inherit; font-size: 15px; padding: 12px 14px;
-    border-radius: 8px; border: 1px solid #334155; background: #1e293b;
-    color: #e2e8f0; width: 100%; margin: 6px 0;
+  .container { max-width: 1400px; margin: 0 auto; }
+  h1 {
+    font-size: 28px; margin-bottom: 6px;
+    background: linear-gradient(90deg,#ff3ea5,#00e5ff);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
-  button { background: #2563eb; border: none; color: white; cursor: pointer; font-weight: 600; }
-  button:active { background: #1d4ed8; }
-  button.hint { background: #ca8a04; }
-  button.hint:active { background: #a16207; }
-  .result { margin-top: 10px; padding: 12px; border-radius: 8px; font-size: 14px; word-break: break-word; min-height: 0; }
-  .result.ok { background: #052e16; color: #4ade80; }
-  .result.fail { background: #450a0a; color: #f87171; }
-  .result:empty { display: none; }
-  .flag { background: #052e16; color: #4ade80; padding: 4px 8px; border-radius: 4px; font-weight: bold; display: inline-block; margin-top: 6px; font-size: 13px; font-family: monospace; }
-  code { background: #1e293b; padding: 3px 6px; border-radius: 4px; color: #fbbf24; font-size: 13px; word-break: break-all; font-family: monospace; }
-  #hintBox { background: #1c1917; border-left: 4px solid #facc15; padding: 14px; margin: 16px 0; border-radius: 8px; display: none; white-space: pre-wrap; font-size: 13px; }
-  #hintBox.show { display: block; }
-  #hintBox.lv2 { border-left-color: #fb923c; }
-  #hintBox.lv3 { border-left-color: #ef4444; }
-  .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #1e293b; font-size: 12px; color: #64748b; }
-  .progress {
-    position: sticky; top: 0; z-index: 10;
-    background: #0a0e1a; padding: 10px 0;
-    text-align: center; color: #4ade80; font-weight: bold;
-    font-size: 14px; border-bottom: 1px solid #1e293b;
+  .sub { color:#7d8590; font-size:13px; margin-bottom:20px; }
+
+  .card {
+    background: rgba(22,27,34,.85); border:1px solid #21262d;
+    border-radius:12px; padding:18px; margin-bottom:16px;
+    box-shadow: 0 4px 24px rgba(0,0,0,.4);
   }
-  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .hintBtns { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin: 8px 0; }
-  .hintBtns button { font-size: 13px; padding: 10px 6px; }
+  .card h2 { font-size:15px; color:#58a6ff; margin-bottom:12px; }
+
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px; }
+  .stat {
+    background: linear-gradient(135deg,#161b22,#0d1117);
+    border:1px solid #21262d; border-radius:10px; padding:14px;
+    position:relative; overflow:hidden;
+  }
+  .stat::before {
+    content:''; position:absolute; top:0; left:0; width:3px; height:100%;
+    background: linear-gradient(180deg,#00e5ff,#ff3ea5);
+  }
+  .stat .label { font-size:11px; color:#7d8590; text-transform:uppercase; letter-spacing:.5px; }
+  .stat .value { font-size:22px; font-weight:700; margin-top:6px; color:#fff; word-break:break-all; }
+  .stat .value.green { color:#3fb950; }
+  .stat .value.red { color:#f85149; }
+  .stat .value.yellow { color:#d29922; }
+  .stat .value.cyan { color:#00e5ff; }
+  .stat .value.magenta { color:#ff3ea5; }
+
+  .status-row {
+    display:flex; justify-content:space-between; align-items:center;
+    margin-bottom:16px; flex-wrap:wrap; gap:10px;
+  }
+  .status-badge {
+    display:inline-flex; align-items:center; gap:8px;
+    padding:8px 16px; border-radius:20px; font-size:13px; font-weight:600;
+  }
+  .status-badge.live { background:rgba(63,185,80,.15); color:#3fb950; border:1px solid rgba(63,185,80,.4); }
+  .status-badge.idle { background:rgba(248,81,73,.15); color:#f85149; border:1px solid rgba(248,81,73,.4); }
+  .status-badge.wait { background:rgba(210,153,34,.15); color:#d29922; border:1px solid rgba(210,153,34,.4); }
+  .dot { width:8px;height:8px;border-radius:50%;background:currentColor; animation:pulse 1.2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th,td { padding:8px 10px; text-align:left; border-bottom:1px solid #21262d; }
+  th { color:#7d8590; font-weight:500; text-transform:uppercase; font-size:11px; }
+  .bar { display:inline-block; height:8px; border-radius:4px; }
+
+  .input-row { display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end; }
+  .input-row > div { flex:1; min-width:150px; }
+  .input-row label { display:block; font-size:12px; color:#7d8590; margin-bottom:6px; }
+  .input-row input {
+    width:100%; padding:10px 12px; background:#0d1117;
+    border:1px solid #30363d; border-radius:8px; color:#e6edf3; font-size:14px;
+    outline:none; transition:.2s;
+  }
+  .input-row input:focus { border-color:#00e5ff; box-shadow:0 0 0 3px rgba(0,229,255,.1); }
+  .btn {
+    padding:10px 20px; border:none; border-radius:8px; cursor:pointer;
+    font-weight:600; font-size:14px; transition:.2s;
+    background: linear-gradient(135deg,#ff3ea5,#00e5ff); color:#000;
+  }
+  .btn:hover { transform:translateY(-1px); box-shadow:0 6px 20px rgba(0,229,255,.3); }
+  .btn.stop { background:linear-gradient(135deg,#f85149,#d29922); }
+
+  .hint { font-size:12px; color:#7d8590; margin-top:12px; line-height:1.7; }
+  .hint code { background:#161b22; padding:2px 6px; border-radius:4px; color:#00e5ff; }
+
+  .chart-box { position:relative; height:200px; margin-top:10px; }
 </style>
 </head>
 <body>
 
-<div class="progress" id="progress">🏆 Đã tìm: 0/8 flag</div>
+<div class="container">
+  <h1>🔥 Flood Monitor — DarkStack</h1>
+  <div class="sub">Theo dõi tiến độ flood realtime qua Firebase Realtime Database</div>
 
-<h1>🔐 HackMe — 8 thử thách</h1>
-<p style="font-size:13px;color:#94a3b8">Không cần PC. Không cần DevTools. Mọi gợi ý đều có sẵn.</p>
+  <!-- ĐIỀU KHIỂN -->
+  <div class="card">
+    <h2>⚙️ Điều khiển</h2>
+    <div class="input-row">
+      <div style="flex:3;">
+        <label>🔗 Link web cần chạy</label>
+        <input id="urlInput" type="text" placeholder="https://example.com">
+      </div>
+      <div style="flex:1;">
+        <label>⏱️ Số giây chạy</label>
+        <input id="timeInput" type="number" value="60" min="1">
+      </div>
+      <div style="flex:1;">
+        <label>⏳ Delay (0.1–1s)</label>
+        <input id="delayInput" type="number" value="0.1" step="0.1" min="0.1" max="1">
+      </div>
+      <button class="btn" id="runBtn">🚀 Chạy lệnh</button>
+    </div>
+    <div class="hint">
+      💡 Nhập link + số giây → bấm <b>Chạy lệnh</b> → copy command bên dưới và dán vào terminal:
+      <div id="cmdOutput" style="margin-top:10px; background:#0d1117; padding:12px; border-radius:8px; border:1px solid #30363d; font-family:monospace; color:#00e5ff; word-break:break-all;">
+        Nhập link và số giây rồi bấm Chạy...
+      </div>
+    </div>
+  </div>
 
-<div class="hintBtns">
-  <button class="hint" onclick="showHint(1)">💡 Mức 1</button>
-  <button class="hint" onclick="showHint(2)">💡 Mức 2</button>
-  <button class="hint" onclick="showHint(3)">💡 Mức 3</button>
-</div>
-<div id="hintBox"></div>
+  <!-- TRẠNG THÁI -->
+  <div class="card">
+    <div class="status-row">
+      <div>
+        <span class="status-badge wait" id="statusBadge">
+          <span class="dot"></span>
+          <span id="statusText">Đang chờ dữ liệu...</span>
+        </span>
+      </div>
+      <div style="color:#7d8590; font-size:13px;" id="lastUpdate">—</div>
+    </div>
 
-<!-- ============ 1. XSS ============ -->
-<h2>1️⃣ XSS — Reflected</h2>
-<div class="panel">
-  <input id="n1" placeholder="Nhập tên của bạn" autocomplete="off">
-  <button onclick="c1()">Chào</button>
-  <div id="r1" class="result"></div>
-</div>
+    <div class="grid">
+      <div class="stat"><div class="label">🔗 URL</div><div class="value cyan" id="sUrl" style="font-size:14px;">—</div></div>
+      <div class="stat"><div class="label">⏱ Thời gian chạy</div><div class="value magenta" id="sElapsed">0s</div></div>
+      <div class="stat"><div class="label">🚀 RPS hiện tại</div><div class="value cyan" id="sRpsNow">0</div></div>
+      <div class="stat"><div class="label">📊 RPS trung bình</div><div class="value cyan" id="sRpsAvg">0</div></div>
+    </div>
+  </div>
 
-<!-- ============ 2. IDOR ============ -->
-<h2>2️⃣ IDOR — Đoán ID</h2>
-<div class="panel">
-  <input id="n2" type="number" placeholder="User ID (1-500)" autocomplete="off">
-  <button onclick="c2()">Xem hồ sơ</button>
-  <div id="r2" class="result"></div>
-</div>
+  <!-- SỐ LIỆU CHÍNH -->
+  <div class="card">
+    <h2>📊 Thống kê tổng quan</h2>
+    <div class="grid">
+      <div class="stat"><div class="label">📦 Tổng requests</div><div class="value" id="sTotal">0</div></div>
+      <div class="stat"><div class="label">✅ Thành công (2xx)</div><div class="value green" id="sSuccess">0</div></div>
+      <div class="stat"><div class="label">❌ Conn errors</div><div class="value red" id="sConnErr">0</div></div>
+      <div class="stat"><div class="label">⏛ Timeouts</div><div class="value yellow" id="sTimeout">0</div></div>
+      <div class="stat"><div class="label">⚠️ Lỗi khác</div><div class="value red" id="sOtherErr">0</div></div>
+      <div class="stat"><div class="label">📈 Tỉ lệ thành công</div><div class="value green" id="sSuccessRate">0%</div></div>
+      <div class="stat"><div class="label">📦 Băng thông</div><div class="value magenta" id="sBytes">0 B</div></div>
+      <div class="stat"><div class="label">🧵 Workers</div><div class="value yellow" id="sWorkers">0</div></div>
+    </div>
+  </div>
 
-<!-- ============ 3. Weak password ============ -->
-<h2>3️⃣ Mật khẩu yếu</h2>
-<div class="panel">
-  <input id="n3" placeholder="Mật khẩu admin" autocomplete="off">
-  <button onclick="c3()">Đăng nhập</button>
-  <div id="r3" class="result"></div>
-</div>
+  <!-- LATENCY -->
+  <div class="card">
+    <h2>⏱ Latency</h2>
+    <div class="grid">
+      <div class="stat"><div class="label">Trung bình</div><div class="value cyan" id="sLatAvg">0 ms</div></div>
+      <div class="stat"><div class="label">P50</div><div class="value cyan" id="sLatP50">0 ms</div></div>
+      <div class="stat"><div class="label">P95</div><div class="value yellow" id="sLatP95">0 ms</div></div>
+      <div class="stat"><div class="label">P99</div><div class="value red" id="sLatP99">0 ms</div></div>
+      <div class="stat"><div class="label">Min</div><div class="value green" id="sLatMin">0 ms</div></div>
+      <div class="stat"><div class="label">Max</div><div class="value red" id="sLatMax">0 ms</div></div>
+    </div>
+  </div>
 
-<!-- ============ 4. Hold button ============ -->
-<h2>4️⃣ Nhấn giữ nút</h2>
-<div class="panel">
-  <button id="holdBtn"
-          onmousedown="holdStart()" onmouseup="holdEnd()" onmouseleave="holdEnd()"
-          ontouchstart="holdStart(event)" ontouchend="holdEnd()"
-          style="user-select:none;-webkit-user-select:none;touch-action:none">
-    👆 Nhấn giữ 1 giây
-  </button>
-  <div id="r4" class="result"></div>
-</div>
+  <!-- BIỂU ĐỒ RPS -->
+  <div class="card">
+    <h2>📈 RPS theo thời gian (60s gần nhất)</h2>
+    <div class="chart-box"><canvas id="rpsChart"></canvas></div>
+  </div>
 
-<!-- ============ 5. Math ============ -->
-<h2>5️⃣ Tính toán bí mật</h2>
-<div class="panel">
-  <p style="font-size:13px">Số bí mật = (7 × 6) + (100 ÷ 4) − 13. Nhập kết quả:</p>
-  <input id="n5" type="number" placeholder="Kết quả" autocomplete="off">
-  <button onclick="c5()">Kiểm tra</button>
-  <div id="r5" class="result"></div>
-</div>
-
-<!-- ============ 6. Base64 ============ -->
-<h2>6️⃣ Giải mã chuỗi</h2>
-<div class="panel">
-  <p style="font-size:13px">Chuỗi bí mật (Base64):</p>
-  <code style="display:block;padding:10px;margin:6px 0">RkxBR3tiYXNlNjRfaXNfbm90X2VuY3J5cHRpb259</code>
-  <input id="n6" placeholder="Nhập chuỗi đã giải mã" autocomplete="off">
-  <button onclick="c6()">Kiểm tra</button>
-  <div id="r6" class="result"></div>
-</div>
-
-<!-- ============ 7. SQLi giả lập ============ -->
-<h2>7️⃣ SQL Injection (giả lập)</h2>
-<div class="panel">
-  <p style="font-size:13px">Đăng nhập admin bằng cách bypass câu truy vấn SQL.</p>
-  <input id="n7u" placeholder="Username" autocomplete="off">
-  <input id="n7p" placeholder="Password" autocomplete="off">
-  <button onclick="c7()">Đăng nhập</button>
-  <div id="r7" class="result"></div>
-</div>
-
-<!-- ============ 8. Pattern ============ -->
-<h2>8️⃣ Đoán quy luật</h2>
-<div class="panel">
-  <p style="font-size:13px">Dãy số: 2, 3, 5, 7, 11, 13, ?</p>
-  <input id="n8" type="number" placeholder="Số tiếp theo" autocomplete="off">
-  <button onclick="c8()">Trả lời</button>
-  <div id="r8" class="result"></div>
-</div>
-
-<div class="footer">
-  HackMe v2 — bài tập học tập. Mọi flag là giả, không ảnh hưởng hệ thống nào.
+  <!-- STATUS CODES -->
+  <div class="card">
+    <h2>🎯 Status Codes</h2>
+    <table>
+      <thead>
+        <tr><th>Code</th><th>Count</th><th>Phân bố</th></tr>
+      </thead>
+      <tbody id="statusBody">
+        <tr><td colspan="3" style="color:#7d8590; text-align:center;">Chưa có dữ liệu...</td></tr>
+      </tbody>
+    </table>
+  </div>
 </div>
 
 <script>
-/* ========== HỆ THỐNG ĐẾM FLAG ========== */
-const found = new Set();
-function markFlag(n) {
-  found.add(n);
-  document.getElementById("progress").textContent =
-    "🏆 Đã tìm: " + found.size + "/8 flag" + (found.size === 8 ? " 🎉 HOÀN THÀNH!" : "");
-}
-
-/* ========== 1. XSS ========== */
-function c1() {
-  const v = document.getElementById("n1").value;
-  const b = document.getElementById("r1");
-  b.innerHTML = "Xin chào, " + v + "!";
-  b.className = "result";
-  if (/<img[^>]*onerror|<svg[^>]*onload|<script|javascript:|<iframe/i.test(v)) {
-    b.innerHTML += '<br><span class="flag">FLAG{xss_reflected_ok}</span>';
-    b.className = "result ok";
-    markFlag(1);
-  }
-}
-
-/* ========== 2. IDOR ========== */
-const USERS = {};
-for (let i = 1; i <= 500; i++) USERS[i] = { name: "User " + i, role: "user" };
-USERS[313] = { name: "admin_ẩn", role: "admin", secret: "FLAG{idor_id_313}" };
-
-function c2() {
-  const id = document.getElementById("n2").value;
-  const b = document.getElementById("r2");
-  const u = USERS[id];
-  if (!u) { b.textContent = "ID không tồn tại"; b.className = "result fail"; return; }
-  b.innerHTML = "ID: " + id + "<br>Tên: " + u.name + "<br>Vai trò: " + u.role;
-  b.className = "result";
-  if (u.secret) {
-    b.innerHTML += '<br><span class="flag">' + u.secret + '</span>';
-    b.className = "result ok";
-    markFlag(2);
-  }
-}
-
-/* ========== 3. Mật khẩu yếu ========== */
-function c3() {
-  const p = document.getElementById("n3").value.toLowerCase().trim();
-  const b = document.getElementById("r3");
-  const weak = ["admin", "123456", "password", "12345678", "qwerty", "abc123", "letmein"];
-  if (weak.includes(p)) {
-    b.innerHTML = "✅ Đăng nhập thành công!<br><span class='flag'>FLAG{weak_password_" + p + "}</span>";
-    b.className = "result ok";
-    markFlag(3);
-  } else {
-    b.textContent = "❌ Sai. Thử các mật khẩu phổ biến nhất.";
-    b.className = "result fail";
-  }
-}
-
-/* ========== 4. Hold ========== */
-let holdTimer = null;
-function holdStart(e) {
-  if (e && e.cancelable) e.preventDefault();
-  holdTimer = setTimeout(() => {
-    const b = document.getElementById("r4");
-    b.innerHTML = "⏱ Giữ đủ lâu!<br><span class='flag'>FLAG{hold_button_1s}</span>";
-    b.className = "result ok";
-    markFlag(4);
-  }, 1000);
-}
-function holdEnd() {
-  if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
-}
-
-/* ========== 5. Math ========== */
-function c5() {
-  const v = parseInt(document.getElementById("n5").value);
-  const b = document.getElementById("r5");
-  if (v === 54) {
-    b.innerHTML = "✅ Chính xác!<br><span class='flag'>FLAG{math_54}</span>";
-    b.className = "result ok";
-    markFlag(5);
-  } else {
-    b.textContent = "❌ Sai. (7×6=42) + (100÷4=25) − 13 = ?";
-    b.className = "result fail";
-  }
-}
-
-/* ========== 6. Base64 ========== */
-function c6() {
-  const v = document.getElementById("n6").value.trim();
-  const b = document.getElementById("r6");
-  if (v === "FLAG{base64_is_not_encryption}") {
-    b.innerHTML = "✅ Giải mã đúng!<br><span class='flag'>FLAG{base64_is_not_encryption}</span>";
-    b.className = "result ok";
-    markFlag(6);
-  } else {
-    b.textContent = "❌ Chưa đúng. Thử decode bằng base64decode.org hoặc app.";
-    b.className = "result fail";
-  }
-}
-
-/* ========== 7. SQLi ========== */
-function c7() {
-  const u = document.getElementById("n7u").value;
-  const p = document.getElementById("n7p").value;
-  const b = document.getElementById("r7");
-
-  // Giả lập câu truy vấn: SELECT * FROM users WHERE user='...' AND pass='...'
-  const sqli = /('|"|--|\/\*|or\s+1\s*=\s*1|'\s*or\s*'1'='1)/i.test(u) ||
-               /('|"|--|\/\*)/i.test(p) ||
-               u.toLowerCase().includes("or 1=1") ||
-               p.toLowerCase().includes("or 1=1");
-
-  if (sqli) {
-    b.innerHTML = "💉 SQL Injection thành công!<br><span class='flag'>FLAG{sqli_bypass_login}</span>";
-    b.className = "result ok";
-    markFlag(7);
-  } else if (u === "admin" && p === "admin123") {
-    b.textContent = "Đăng nhập thành công (nhưng chưa phải SQLi).";
-    b.className = "result";
-  } else {
-    b.textContent = "❌ Sai. Thử payload SQLi: admin' -- hoặc ' OR 1=1 --";
-    b.className = "result fail";
-  }
-}
-
-/* ========== 8. Pattern ========== */
-function c8() {
-  const v = parseInt(document.getElementById("n8").value);
-  const b = document.getElementById("r8");
-  if (v === 17) {
-    b.innerHTML = "✅ Đúng! (số nguyên tố tiếp theo)<br><span class='flag'>FLAG{prime_17}</span>";
-    b.className = "result ok";
-    markFlag(8);
-  } else {
-    b.textContent = "❌ Sai. Đây là dãy số nguyên tố.";
-    b.className = "result fail";
-  }
-}
-
-/* ========== GỢI Ý ========== */
-const HINTS = {
-  1: {
-    cls: "lv1",
-    text:
-`🟡 GỢI Ý MỨC 1 — hướng đi chung
-
-1. XSS — nhập HTML/JS vào ô text
-2. IDOR — đoán ID số
-3. Mật khẩu — thử các mật khẩu yếu phổ biến
-4. Nhấn giữ nút — thao tác giữ ngón tay
-5. Toán — tính đúng công thức
-6. Base64 — giải mã chuỗi
-7. SQLi — chèn ký tự đặc biệt vào form login
-8. Dãy số — nhận diện quy luật`
-  },
-  2: {
-    cls: "lv2",
-    text:
-`🟠 GỢI Ý MỨC 2 — chi tiết hơn
-
-1. Payload: <img src=x onerror=alert(1)>
-2. Thử ID ngẫu nhiên trong khoảng 200-400
-3. Mật khẩu yếu top đầu thế giới: admin, 123456, password
-4. Nhấn và giữ ngón tay trên nút ít nhất 1 giây
-5. (7×6) + (100÷4) − 13 = 42 + 25 − 13
-6. Chuỗi Base64 → dùng base64decode.org
-7. Payload SQLi: admin' -- hoặc ' OR 1=1 --
-8. Dãy: 2,3,5,7,11,13,... là gì?`
-  },
-  3: {
-    cls: "lv3",
-    text:
-`🔴 GỢI Ý MỨC 3 — ĐÁP ÁN
-
-1. FLAG{xss_reflected_ok}
-   Payload: <img src=x onerror=alert(1)>
-
-2. FLAG{idor_id_313}
-   ID cần nhập: 313
-
-3. FLAG{weak_password_admin}
-   Mật khẩu: admin (hoặc 123456)
-
-4. FLAG{hold_button_1s}
-   Nhấn giữ nút 1 giây
-
-5. FLAG{math_54}
-   Kết quả: 54
-
-6. FLAG{base64_is_not_encryption}
-   Giải mã chuỗi Base64 đã cho
-
-7. FLAG{sqli_bypass_login}
-   Username: admin' --
-   Hoặc: ' OR 1=1 --
-
-8. FLAG{prime_17}
-   Số tiếp theo: 17`
-  }
+// ============ FIREBASE CONFIG ============
+const firebaseConfig = {
+  databaseURL: "https://shopmduy-default-rtdb.asia-southeast1.firebasedatabase.app"
 };
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
 
-let currentLevel = 0;
-function showHint(level) {
-  const b = document.getElementById("hintBox");
-  const h = HINTS[level];
-  b.textContent = h.text;
-  b.className = "show " + h.cls;
-  currentLevel = level;
+// ============ FORMAT HELPERS ============
+function fmtNum(n) { return (n || 0).toLocaleString('en-US'); }
+function fmtBytes(n) {
+  n = n || 0;
+  const u = ['B','KB','MB','GB','TB','PB'];
+  let i = 0;
+  while (n >= 1024 && i < u.length - 1) { n /= 1024; i++; }
+  return n.toFixed(1) + ' ' + u[i];
+}
+function fmtTime(s) {
+  s = Math.floor(s || 0);
+  if (s < 60) return s + 's';
+  const m = Math.floor(s / 60), r = s % 60;
+  if (m < 60) return m + 'm ' + r + 's';
+  const h = Math.floor(m / 60);
+  return h + 'h ' + (m % 60) + 'm';
 }
 
-/* ========== KHỞI TẠO ========== */
-console.log("%c🔐 HackMe — Mở Console làm gì? Không có flag ở đây đâu 😉", "color:#4ade80;font-size:14px");
+// ============ CHART ============
+const ctx = document.getElementById('rpsChart').getContext('2d');
+const rpsChart = new Chart(ctx, {
+  type: 'line',
+  data: {
+    labels: [],
+    datasets: [{
+      label: 'RPS',
+      data: [],
+      borderColor: '#00e5ff',
+      backgroundColor: 'rgba(0,229,255,.15)',
+      fill: true,
+      tension: 0.3,
+      pointRadius: 0,
+      borderWidth: 2,
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    animation: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { ticks: { color: '#7d8590', maxTicksLimit: 10 }, grid: { color: '#21262d' } },
+      y: { beginAtZero: true, ticks: { color: '#7d8590' }, grid: { color: '#21262d' } }
+    }
+  }
+});
+
+// ============ CẬP NHẬT UI ============
+let lastData = null;
+
+function updateUI(d) {
+  if (!d) return;
+  lastData = d;
+
+  // Trạng thái
+  const badge = document.getElementById('statusBadge');
+  const text = document.getElementById('statusText');
+  if (d.running) {
+    badge.className = 'status-badge live';
+    text.textContent = '🟢 ĐANG CHẠY';
+  } else if (d.total > 0) {
+    badge.className = 'status-badge idle';
+    text.textContent = '🔴 ĐÃ DỪNG';
+  } else {
+    badge.className = 'status-badge wait';
+    text.textContent = '⏸ CHƯA BẮT ĐẦU';
+  }
+
+  // Last update
+  document.getElementById('lastUpdate').textContent = '🕒 Cập nhật: ' + new Date().toLocaleTimeString('vi-VN');
+
+  // Thông tin
+  document.getElementById('sUrl').textContent = d.url || '—';
+  document.getElementById('sElapsed').textContent = fmtTime(d.elapsed);
+  document.getElementById('sRpsNow').textContent = fmtNum(d.rps_now);
+  document.getElementById('sRpsAvg').textContent = (d.rps_avg || 0).toFixed(1);
+
+  // Số liệu
+  document.getElementById('sTotal').textContent = fmtNum(d.total);
+  document.getElementById('sSuccess').textContent = fmtNum(d.success);
+  document.getElementById('sConnErr').textContent = fmtNum(d.conn_errors);
+  document.getElementById('sTimeout').textContent = fmtNum(d.timeouts);
+  document.getElementById('sOtherErr').textContent = fmtNum(d.other_errors);
+  document.getElementById('sSuccessRate').textContent = (d.success_rate || 0).toFixed(1) + '%';
+  document.getElementById('sBytes').textContent = fmtBytes(d.bytes_total);
+  document.getElementById('sWorkers').textContent = d.workers || 0;
+
+  // Latency
+  document.getElementById('sLatAvg').textContent = (d.latency_avg_ms || 0).toFixed(1) + ' ms';
+  document.getElementById('sLatP50').textContent = (d.latency_p50_ms || 0).toFixed(1) + ' ms';
+  document.getElementById('sLatP95').textContent = (d.latency_p95_ms || 0).toFixed(1) + ' ms';
+  document.getElementById('sLatP99').textContent = (d.latency_p99_ms || 0).toFixed(1) + ' ms';
+  document.getElementById('sLatMin').textContent = (d.latency_min_ms || 0).toFixed(0) + ' ms';
+  document.getElementById('sLatMax').textContent = (d.latency_max_ms || 0).toFixed(0) + ' ms';
+
+  // Chart
+  const ps = d.per_second || [];
+  rpsChart.data.labels = ps.map((_, i) => (ps.length - i) + 's');
+  rpsChart.data.datasets[0].data = ps;
+  rpsChart.update('none');
+
+  // Status codes
+  const tbody = document.getElementById('statusBody');
+  const codes = d.status_codes || {};
+  const entries = Object.entries(codes).sort((a, b) => b[1] - a[1]);
+  if (entries.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="3" style="color:#7d8590; text-align:center;">Chưa có dữ liệu...</td></tr>';
+  } else {
+    const total = entries.reduce((s, [, c]) => s + c, 0);
+    tbody.innerHTML = entries.map(([code, cnt]) => {
+      const c = parseInt(code);
+      let color = '#f85149';
+      if (c >= 200 && c < 300) color = '#3fb950';
+      else if (c >= 300 && c < 400) color = '#d29922';
+      else if (c >= 400 && c < 500) color = '#f85149';
+      else if (c >= 500) color = '#ff3ea5';
+      const pct = (cnt / total * 100).toFixed(1);
+      const w = Math.max(2, cnt / total * 100);
+      return `<tr>
+        <td style="color:${color}; font-weight:700;">${code}</td>
+        <td>${fmtNum(cnt)}</td>
+        <td><span class="bar" style="width:${w}%; background:${color};"></span> <span style="color:#7d8590;">${pct}%</span></td>
+      </tr>`;
+    }).join('');
+  }
+}
+
+// ============ LẮNG NGHE FIREBASE ============
+db.ref('current').on('value', (snap) => {
+  const d = snap.val();
+  if (d) updateUI(d);
+}, (err) => {
+  console.error('Firebase error:', err);
+  document.getElementById('statusText').textContent = '❌ Lỗi kết nối Firebase';
+});
+
+// ============ NÚT CHẠY ============
+document.getElementById('runBtn').addEventListener('click', () => {
+  const url = document.getElementById('urlInput').value.trim();
+  const time = document.getElementById('timeInput').value.trim() || '60';
+  const delay = document.getElementById('delayInput').value.trim() || '0.1';
+
+  if (!url) {
+    alert('Vui lòng nhập link web!');
+    return;
+  }
+
+  // Tạo command gợi ý
+  const cmd = `python att.py`;
+  const info = `🔗 URL: ${url}\n⏱ Số giây: ${time}\n⏳ Delay: ${delay}\n\n` +
+    `➡️ Mở terminal và chạy:\n${cmd}\n\n` +
+    `Sau đó nhập:\n  Link: ${url}\n  Delay: ${delay}\n  Số giây: ${time}`;
+
+  const out = document.getElementById('cmdOutput');
+  out.innerHTML = info.replace(/\n/g, '<br>');
+
+  // Thử ghi yêu cầu lên Firebase để tự động hoá (nếu bạn muốn mở rộng)
+  db.ref('command').set({
+    url: url,
+    duration: parseFloat(time),
+    delay: parseFloat(delay),
+    requested_at: Date.now(),
+    status: 'pending'
+  }).then(() => {
+    console.log('✅ Đã gửi command lên Firebase');
+  }).catch(err => {
+    console.error('Lỗi gửi command:', err);
+  });
+});
+
+console.log('🔥 Flood Monitor ready.');
 </script>
 </body>
 </html>
