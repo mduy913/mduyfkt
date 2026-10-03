@@ -3,19 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hiệu ứng trái tim phát sáng</title>
+    <title>Ma Pháp Trận Huyền Ảo</title>
     <style>
-        /* Reset CSS */
         body, html {
             margin: 0;
             padding: 0;
             width: 100%;
             height: 100%;
             overflow: hidden;
-            background-color: #000; /* Nền đen giống ảnh */
+            background-color: #000;
+            background-image: radial-gradient(circle at center, #0a0a1a 0%, #000 100%);
         }
-
-        /* Canvas chiếm toàn màn hình */
         canvas {
             display: block;
             width: 100%;
@@ -25,156 +23,198 @@
 </head>
 <body>
 
-    <canvas id="heartCanvas"></canvas>
+    <canvas id="magicCanvas"></canvas>
 
     <script>
-        const canvas = document.getElementById('heartCanvas');
+        const canvas = document.getElementById('magicCanvas');
         const ctx = canvas.getContext('2d');
 
-        // Cấu hình
         let width, height;
-        const NUM_PARTICLES = 250; // Số lượng hạt
-        const LIGHT_PINK = '255, 182, 193'; // Màu hồng nhạt (dạng RGB string)
-        const BLUE_GLOW = '100, 200, 255'; // Màu xanh sáng
-        const WHITE = '255, 255, 255'; // Màu trắng
+        let centerX, centerY;
+        let time = 0; // Biến thời gian để tạo hiệu ứng mượt mà
 
-        // Mảng chứa các hạt
+        // Cấu hình Ma Pháp Trận
+        const CONFIG = {
+            numRings: 5,           // Số lượng vòng tròn
+            particlesPerRing: 150, // Số hạt trên mỗi vòng
+            baseRadius: 60,        // Bán kính vòng trong cùng
+            radiusStep: 50,        // Khoảng cách giữa các vòng
+            rotationSpeed: 0.005,  // Tốc độ xoay
+            breathSpeed: 0.02,     // Tốc độ co giãn (thở)
+            breathAmt: 10,         // Độ co giãn
+            colors: [
+                { r: 100, g: 200, b: 255 }, // Xanh lam
+                { r: 255, g: 255, b: 255 }, // Trắng
+                { r: 200, g: 100, b: 255 }, // Tím
+                { r: 100, g: 255, b: 200 }  // Xanh ngọc
+            ]
+        };
+
         let particles = [];
 
-        // Hàm thay đổi kích thước canvas
         function resize() {
             width = canvas.width = window.innerWidth;
             height = canvas.height = window.innerHeight;
-            initParticles(); // Khởi tạo lại hạt khi đổi kích thước màn hình
+            centerX = width / 2;
+            centerY = height / 2;
+            initParticles();
         }
 
-        // Công thức toán học tạo hình trái tim
-        function heartShape(t) {
-            const x = 16 * Math.pow(Math.sin(t), 3);
-            const y = 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t);
-            return { x, y };
-        }
-
-        // Tạo danh sách các điểm đích trên hình trái tim
-        function generateHeartPoints(numPoints) {
-            const points = [];
-            const scale = Math.min(width, height) / 40; // Tự động scale theo màn hình
-            
-            for (let i = 0; i < numPoints; i++) {
-                // Chia đều các điểm trên đường cong trái tim
-                const t = (i / numPoints) * Math.PI * 2;
-                const { x, y } = heartShape(t);
-                
-                // Tính toán tọa độ màn hình
-                const screenX = width / 2 + x * scale;
-                const screenY = height / 2 - y * scale; // Trừ đi vì trục y trong canvas hướng xuống
-                points.push({ x: screenX, y: screenY });
-            }
-            return points;
-        }
-
-        // Lớp Particle (Hạt)
         class Particle {
-            constructor(targetX, targetY) {
-                this.targetX = targetX;
-                this.targetY = targetY;
+            constructor(radius, angle, ringIndex) {
+                this.baseRadius = radius;
+                this.angle = angle;
+                this.ringIndex = ringIndex;
                 
-                // Bắt đầu từ vị trí ngẫu nhiên
-                this.x = Math.random() * width;
-                this.y = Math.random() * height;
+                // Mỗi vòng xoay một hướng và tốc độ khác nhau
+                this.speed = (ringIndex % 2 === 0 ? 1 : -1) * (CONFIG.rotationSpeed + ringIndex * 0.001);
                 
-                this.size = Math.random() * 2 + 1.5; // Kích thước từ 1.5 đến 3.5
-                this.baseColor = this.getRandomColor();
-                this.alpha = Math.random() * 0.7 + 0.3; // Độ mờ từ 0.3 đến 1.0
-                this.speed = Math.random() * 0.06 + 0.02; // Tốc độ bay
+                // Kích thước hạt
+                this.size = Math.random() * 2 + 1;
                 
-                this.arrived = false;
-                this.wobblePhase = Math.random() * Math.PI * 2;
-                this.wobbleAmt = Math.random() * 2 + 1; // Độ rung lắc
-            }
-
-            getRandomColor() {
-                const rand = Math.random();
-                if (rand < 0.33) return LIGHT_PINK;
-                if (rand < 0.66) return BLUE_GLOW;
-                return WHITE;
+                // Màu sắc ngẫu nhiên
+                this.color = CONFIG.colors[Math.floor(Math.random() * CONFIG.colors.length)];
+                
+                // Độ sáng nhấp nháy
+                this.alpha = Math.random() * 0.5 + 0.3;
+                this.alphaSpeed = Math.random() * 0.05 + 0.02;
+                
+                // Độ lệch ngẫu nhiên để trông tự nhiên hơn (không thẳng tắp)
+                this.offset = (Math.random() - 0.5) * 5;
+                
+                // Hình dạng: 0 = tròn, 1 = thoi (sao), 2 = vuông nhỏ
+                this.shape = Math.random() > 0.85 ? 1 : (Math.random() > 0.9 ? 2 : 0);
             }
 
             update() {
-                const dx = this.targetX - this.x;
-                const dy = this.targetY - this.y;
-
-                // Kiểm tra xem hạt đã đến đích chưa
-                if (Math.abs(dx) < 2 && Math.abs(dy) < 2) {
-                    this.arrived = true;
-                    // Hiệu ứng rung lắc khi đã vào vị trí
-                    this.wobblePhase += 0.05;
-                    this.x = this.targetX + Math.sin(this.wobblePhase) * this.wobbleAmt;
-                    this.y = this.targetY + Math.cos(this.wobblePhase) * this.wobbleAmt;
-                } else {
-                    // Di chuyển mượt mà về đích
-                    this.x += dx * this.speed;
-                    this.y += dy * this.speed;
+                // Xoay
+                this.angle += this.speed;
+                
+                // Nhấp nháy độ sáng
+                this.alpha += this.alphaSpeed;
+                if (this.alpha > 1 || this.alpha < 0.2) {
+                    this.alphaSpeed *= -1;
                 }
             }
 
             draw() {
-                // 1. Vẽ hạt chính (Particle Body)
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(${this.baseColor}, ${this.alpha})`;
-                ctx.fill();
+                // Tính toán bán kính có hiệu ứng "thở" (co giãn)
+                const breath = Math.sin(time * CONFIG.breathSpeed + this.ringIndex) * CONFIG.breathAmt;
+                const currentRadius = this.baseRadius + breath + this.offset;
+                
+                // Tính tọa độ
+                const x = centerX + Math.cos(this.angle) * currentRadius;
+                const y = centerY + Math.sin(this.angle) * currentRadius;
 
-                // 2. Vẽ quầng sáng (Glow Effect) - giống đoạn code Pygame trong ảnh
-                if (this.arrived) {
-                    ctx.beginPath();
-                    // Vẽ hình tròn lớn hơn với màu hồng nhạt và độ mờ thấp
-                    const glowSize = this.size * 4;
-                    const gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, glowSize);
-                    
-                    // Tâm sáng
-                    gradient.addColorStop(0, `rgba(${LIGHT_PINK}, ${this.alpha * 0.4})`);
-                    // Rìa mờ dần
-                    gradient.addColorStop(1, `rgba(${LIGHT_PINK}, 0)`);
-                    
-                    ctx.fillStyle = gradient;
-                    ctx.arc(this.x, this.y, glowSize, 0, Math.PI * 2);
-                    ctx.fill();
+                ctx.save();
+                ctx.translate(x, y);
+                ctx.rotate(this.angle); // Xoay hạt theo quỹ đạo
+
+                ctx.beginPath();
+                ctx.fillStyle = `rgba(${this.color.r}, ${this.color.g}, ${this.color.b}, ${this.alpha})`;
+                
+                // Vẽ quầng sáng (Glow)
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = `rgba(${this.color.r}, ${this.color.g}, ${this.color.b}, ${this.alpha})`;
+
+                if (this.shape === 0) {
+                    // Hình tròn
+                    ctx.arc(0, 0, this.size, 0, Math.PI * 2);
+                } else if (this.shape === 1) {
+                    // Hình thoi (ngôi sao 4 cánh)
+                    ctx.moveTo(0, -this.size * 2);
+                    ctx.lineTo(this.size, 0);
+                    ctx.lineTo(0, this.size * 2);
+                    ctx.lineTo(-this.size, 0);
+                    ctx.closePath();
+                } else {
+                    // Hình vuông nhỏ
+                    ctx.rect(-this.size/2, -this.size/2, this.size, this.size);
+                }
+                
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        function initParticles() {
+            particles = [];
+            
+            for (let r = 0; r < CONFIG.numRings; r++) {
+                const radius = CONFIG.baseRadius + r * CONFIG.radiusStep;
+                const count = CONFIG.particlesPerRing + r * 20; // Vòng ngoài nhiều hạt hơn
+                
+                for (let i = 0; i < count; i++) {
+                    const angle = (i / count) * Math.PI * 2;
+                    // Thêm chút ngẫu nhiên vào góc để không bị thẳng quá
+                    const randomAngle = angle + (Math.random() - 0.5) * 0.1;
+                    particles.push(new Particle(radius, randomAngle, r));
                 }
             }
         }
 
-        // Khởi tạo các hạt
-        function initParticles() {
-            particles = [];
-            const heartPoints = generateHeartPoints(NUM_PARTICLES);
-            
-            for (let i = 0; i < NUM_PARTICLES; i++) {
-                const target = heartPoints[i];
-                particles.push(new Particle(target.x, target.y));
-            }
-        }
-
-        // Vòng lặp Animation
         function animate() {
-            // Xóa màn hình với màu đen mờ (tạo vệt mờ - trail effect)
-            // Nếu muốn xóa hoàn toàn, dùng: ctx.clearRect(0, 0, width, height);
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.2)'; 
+            // Xóa màn hình với hiệu ứng vệt mờ (Trail)
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
             ctx.fillRect(0, 0, width, height);
 
-            // Cập nhật và vẽ từng hạt
+            time += 0.1;
+
+            // Vẽ các hạt
             particles.forEach(p => {
                 p.update();
                 p.draw();
             });
 
+            // Vẽ thêm các vòng tròn mờ (nền) để tạo cảm giác trận pháp có cấu trúc
+            drawBackgroundRings();
+
             requestAnimationFrame(animate);
+        }
+
+        function drawBackgroundRings() {
+            ctx.save();
+            ctx.translate(centerX, centerY);
+            
+            for (let r = 0; r < CONFIG.numRings; r++) {
+                const breath = Math.sin(time * CONFIG.breathSpeed + r) * CONFIG.breathAmt;
+                const radius = CONFIG.baseRadius + r * CONFIG.radiusStep + breath;
+                
+                ctx.beginPath();
+                // Vẽ vòng tròn mờ
+                ctx.strokeStyle = `rgba(100, 200, 255, 0.05)`;
+                ctx.lineWidth = 1;
+                ctx.arc(0, 0, radius, 0, Math.PI * 2);
+                ctx.stroke();
+
+                // Vẽ các vạch chia độ (như trong ảnh)
+                if (r % 2 === 0) {
+                    ctx.save();
+                    ctx.rotate(time * 0.01 * (r % 2 === 0 ? 1 : -1));
+                    const ticks = 36;
+                    for (let i = 0; i < ticks; i++) {
+                        const tickAngle = (i / ticks) * Math.PI * 2;
+                        const x1 = Math.cos(tickAngle) * (radius - 5);
+                        const y1 = Math.sin(tickAngle) * (radius - 5);
+                        const x2 = Math.cos(tickAngle) * (radius + 5);
+                        const y2 = Math.sin(tickAngle) * (radius + 5);
+                        
+                        ctx.beginPath();
+                        ctx.strokeStyle = `rgba(100, 200, 255, 0.1)`;
+                        ctx.moveTo(x1, y1);
+                        ctx.lineTo(x2, y2);
+                        ctx.stroke();
+                    }
+                    ctx.restore();
+                }
+            }
+            ctx.restore();
         }
 
         // Bắt đầu
         window.addEventListener('resize', resize);
-        resize(); // Khởi tạo kích thước ban đầu
-        animate(); // Bắt đầu vòng lặp
+        resize();
+        animate();
 
     </script>
 </body>
