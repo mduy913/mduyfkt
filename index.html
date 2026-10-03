@@ -1,248 +1,181 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Trận Pháp Biến Hình</title>
-<style>
-html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000}
-canvas{display:block;width:100%;height:100%}
-#ui{
-  position:fixed;left:12px;bottom:12px;z-index:5;
-  padding:10px 12px;border:1px solid #333;border-radius:12px;
-  background:rgba(10,10,10,.72);backdrop-filter:blur(8px);
-  color:#ddd;font:13px system-ui,sans-serif
-}
-#ui button{margin-right:6px;border:0;border-radius:8px;padding:7px 10px;background:#222;color:#eee}
-#ui input{vertical-align:middle}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hiệu ứng trái tim phát sáng</title>
+    <style>
+        /* Reset CSS */
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #000; /* Nền đen giống ảnh */
+        }
+
+        /* Canvas chiếm toàn màn hình */
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
 </head>
 <body>
-<canvas id="c"></canvas>
-<div id="ui">
-  <button id="pause">Tạm dừng</button>
-  <button id="next">Đổi hình</button>
-  <label>Tốc độ <input id="speed" type="range" min=".2" max="3" step=".05" value="1"></label>
-</div>
-<script>
-const c=document.getElementById("c"),ctx=c.getContext("2d");
-let W,H,CX,CY,S,DPR;
-function resize(){
-  DPR=Math.min(devicePixelRatio||1,2);
-  W=innerWidth; H=innerHeight; CX=W/2; CY=H/2; S=Math.min(W,H)*.33;
-  c.width=W*DPR;c.height=H*DPR;c.style.width=W+"px";c.style.height=H+"px";
-  ctx.setTransform(DPR,0,0,DPR,0,0);
-}
-addEventListener("resize",resize);resize();
 
-const TAU=Math.PI*2;
-let t=0,paused=false,manualSpeed=1;
-let phase=0;
-const shapes=[
- "circle","polygon3","polygon4","polygon5","polygon6","polygon7","polygon8",
- "star5","star6","star8","doubleStar","hexagram","diamond","cross",
- "flower6","flower8","flower12","sun","gear","spiral","mandala","orbital",
- "sigil","rings","grid","web","lotus","infinity"
-];
+    <canvas id="heartCanvas"></canvas>
 
-function ease(x){return x*x*(3-2*x)}
-function poly(r,n,rot=0){
-  ctx.beginPath();
-  for(let i=0;i<n;i++){
-    const a=rot+i*TAU/n, x=Math.cos(a)*r, y=Math.sin(a)*r;
-    i?ctx.lineTo(x,y):ctx.moveTo(x,y);
-  }
-  ctx.closePath();ctx.stroke();
-}
-function star(ro,ri,n,rot=0){
-  ctx.beginPath();
-  for(let i=0;i<n*2;i++){
-    const r=i%2?ri:ro,a=rot+i*Math.PI/n;
-    const x=Math.cos(a)*r,y=Math.sin(a)*r;
-    i?ctx.lineTo(x,y):ctx.moveTo(x,y);
-  }
-  ctx.closePath();ctx.stroke();
-}
-function gear(r1,r2,n,rot=0){
-  ctx.beginPath();
-  for(let i=0;i<n*4;i++){
-    const k=i%4,r=k<2?r2:r1,a=rot+i*TAU/(n*4);
-    const x=Math.cos(a)*r,y=Math.sin(a)*r;
-    i?ctx.lineTo(x,y):ctx.moveTo(x,y);
-  }
-  ctx.closePath();ctx.stroke();
-}
-function flower(r,n,rot=0){
-  ctx.beginPath();
-  const steps=n*80;
-  for(let i=0;i<=steps;i++){
-    const a=i/steps*TAU;
-    const rr=r*(.52+.48*Math.abs(Math.cos(n*a/2)));
-    const x=Math.cos(a+rot)*rr,y=Math.sin(a+rot)*rr;
-    i?ctx.lineTo(x,y):ctx.moveTo(x,y);
-  }
-  ctx.stroke();
-}
-function spiral(r,turns,rot=0){
-  ctx.beginPath();
-  for(let i=0;i<900;i++){
-    const q=i/899,a=q*TAU*turns+rot,rr=r*q;
-    const x=Math.cos(a)*rr,y=Math.sin(a)*rr;
-    i?ctx.lineTo(x,y):ctx.moveTo(x,y);
-  }
-  ctx.stroke();
-}
-function infinity(r,rot=0){
-  ctx.beginPath();
-  for(let i=0;i<=700;i++){
-    const a=i/700*TAU;
-    const x=r*Math.sin(a),y=r*.55*Math.sin(2*a);
-    const X=x*Math.cos(rot)-y*Math.sin(rot),Y=x*Math.sin(rot)+y*Math.cos(rot);
-    i?ctx.lineTo(X,Y):ctx.moveTo(X,Y);
-  }
-  ctx.stroke();
-}
+    <script>
+        const canvas = document.getElementById('heartCanvas');
+        const ctx = canvas.getContext('2d');
 
-function drawShape(type,r,rot,alpha=1){
-  ctx.globalAlpha=alpha;
-  switch(type){
-    case"circle":ctx.beginPath();ctx.arc(0,0,r,0,TAU);ctx.stroke();break;
-    case"polygon3":poly(r,3,rot);break;
-    case"polygon4":poly(r,4,rot+Math.PI/4);break;
-    case"polygon5":poly(r,5,rot);break;
-    case"polygon6":poly(r,6,rot);break;
-    case"polygon7":poly(r,7,rot);break;
-    case"polygon8":poly(r,8,rot+Math.PI/8);break;
-    case"star5":star(r,r*.42,5,rot);break;
-    case"star6":star(r,r*.43,6,rot);break;
-    case"star8":star(r,r*.43,8,rot);break;
-    case"doubleStar":star(r,r*.36,6,rot);star(r,r*.36,6,rot+Math.PI/6);break;
-    case"hexagram":star(r,r*.50,3,rot);star(r,r*.50,3,rot+Math.PI);break;
-    case"diamond":poly(r,4,rot);poly(r*.63,4,rot);break;
-    case"cross":
-      poly(r*.7,4,rot+Math.PI/4);
-      for(let i=0;i<4;i++){ctx.save();ctx.rotate(rot+i*Math.PI/2);ctx.strokeRect(-r*.12,-r*.72,r*.24,r*.44);ctx.restore()}
-      break;
-    case"flower6":flower(r,6,rot);break;
-    case"flower8":flower(r,8,rot);break;
-    case"flower12":flower(r,12,rot);break;
-    case"sun":
-      ctx.beginPath();ctx.arc(0,0,r*.58,0,TAU);ctx.stroke();
-      for(let i=0;i<32;i++){const a=rot+i*TAU/32;ctx.moveTo(Math.cos(a)*r*.63,Math.sin(a)*r*.63);ctx.lineTo(Math.cos(a)*r,Math.sin(a)*r)}
-      ctx.stroke();break;
-    case"gear":gear(r*.72,r,12,rot);break;
-    case"spiral":spiral(r,4.5,rot);break;
-    case"mandala":
-      for(let i=1;i<=6;i++){ctx.beginPath();ctx.arc(0,0,r*i/6,0,TAU);ctx.stroke()}
-      flower(r,8,rot);flower(r*.55,8,-rot);break;
-    case"orbital":
-      for(let i=0;i<3;i++){ctx.save();ctx.rotate(rot+i*Math.PI/3);ctx.beginPath();ctx.ellipse(0,0,r,r*.28,0,0,TAU);ctx.stroke();ctx.restore()}
-      ctx.beginPath();ctx.arc(0,0,r*.16,0,TAU);ctx.stroke();break;
-    case"sigil":
-      star(r,r*.18,7,rot);poly(r*.72,7,-rot);ctx.beginPath();ctx.arc(0,0,r*.32,0,TAU);ctx.stroke();break;
-    case"rings":
-      for(let i=1;i<=5;i++){ctx.beginPath();ctx.arc(0,0,r*i/5,0,TAU);ctx.stroke()}
-      break;
-    case"grid":
-      for(let i=-4;i<=4;i++){ctx.beginPath();ctx.moveTo(-r,i*r/4);ctx.lineTo(r,i*r/4);ctx.moveTo(i*r/4,-r);ctx.lineTo(i*r/4,r);ctx.stroke()}
-      break;
-    case"web":
-      for(let i=1;i<=6;i++)poly(r*i/6,8,rot);
-      for(let i=0;i<8;i++){const a=rot+i*TAU/8;ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(Math.cos(a)*r,Math.sin(a)*r);ctx.stroke()}
-      break;
-    case"lotus":
-      flower(r,4,rot);flower(r*.7,4,rot+Math.PI/4);flower(r*.42,6,rot);break;
-    case"infinity":infinity(r,rot);break;
-  }
-  ctx.globalAlpha=1;
-}
+        // Cấu hình
+        let width, height;
+        const NUM_PARTICLES = 250; // Số lượng hạt
+        const LIGHT_PINK = '255, 182, 193'; // Màu hồng nhạt (dạng RGB string)
+        const BLUE_GLOW = '100, 200, 255'; // Màu xanh sáng
+        const WHITE = '255, 255, 255'; // Màu trắng
 
-function runeText(r,rot,alpha){
-  ctx.save();ctx.rotate(rot);
-  ctx.font=Math.max(8,S*.035)+"px serif";ctx.textAlign="center";ctx.textBaseline="middle";
-  const chars="☉ ◇ △ ○ ✦ ✧ ☽ ⟡ ⊙ ◈ ✶ ⌬";
-  for(let i=0;i<48;i++){
-    const a=i*TAU/48;
-    ctx.save();ctx.rotate(a);ctx.translate(r,0);ctx.rotate(Math.PI/2);
-    ctx.globalAlpha=alpha;
-    ctx.fillText(chars[i%chars.length],0,0);ctx.restore();
-  }
-  ctx.restore();
-}
+        // Mảng chứa các hạt
+        let particles = [];
 
-function render(now){
-  if(!render.last)render.last=now;
-  const dt=Math.min(50,now-render.last);render.last=now;
-  if(!paused)t+=dt*.001*manualSpeed;
+        // Hàm thay đổi kích thước canvas
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            initParticles(); // Khởi tạo lại hạt khi đổi kích thước màn hình
+        }
 
-  ctx.clearRect(0,0,W,H);
-  ctx.save();ctx.translate(CX,CY);
+        // Công thức toán học tạo hình trái tim
+        function heartShape(t) {
+            const x = 16 * Math.pow(Math.sin(t), 3);
+            const y = 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t);
+            return { x, y };
+        }
 
-  // glow
-  ctx.shadowBlur=18;ctx.shadowColor="rgba(255,255,255,.9)";
-  ctx.strokeStyle="rgba(255,255,255,.82)";ctx.fillStyle="white";
-  ctx.lineWidth=Math.max(1,S*.006);
+        // Tạo danh sách các điểm đích trên hình trái tim
+        function generateHeartPoints(numPoints) {
+            const points = [];
+            const scale = Math.min(width, height) / 40; // Tự động scale theo màn hình
+            
+            for (let i = 0; i < numPoints; i++) {
+                // Chia đều các điểm trên đường cong trái tim
+                const t = (i / numPoints) * Math.PI * 2;
+                const { x, y } = heartShape(t);
+                
+                // Tính toán tọa độ màn hình
+                const screenX = width / 2 + x * scale;
+                const screenY = height / 2 - y * scale; // Trừ đi vì trục y trong canvas hướng xuống
+                points.push({ x: screenX, y: screenY });
+            }
+            return points;
+        }
 
-  // Continuous morph between many distinct forms.
-  const cycle=t*.34;
-  const idx=Math.floor(cycle)%shapes.length;
-  const p=cycle-Math.floor(cycle);
-  const next=(idx+1)%shapes.length;
-  const e=ease(p);
+        // Lớp Particle (Hạt)
+        class Particle {
+            constructor(targetX, targetY) {
+                this.targetX = targetX;
+                this.targetY = targetY;
+                
+                // Bắt đầu từ vị trí ngẫu nhiên
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                
+                this.size = Math.random() * 2 + 1.5; // Kích thước từ 1.5 đến 3.5
+                this.baseColor = this.getRandomColor();
+                this.alpha = Math.random() * 0.7 + 0.3; // Độ mờ từ 0.3 đến 1.0
+                this.speed = Math.random() * 0.06 + 0.02; // Tốc độ bay
+                
+                this.arrived = false;
+                this.wobblePhase = Math.random() * Math.PI * 2;
+                this.wobbleAmt = Math.random() * 2 + 1; // Độ rung lắc
+            }
 
-  // outer rotating frame
-  ctx.save();ctx.rotate(t*.18);
-  drawShape("circle",S*.96,t*.25,.35);
-  drawShape("polygon8",S*.9,-t*.21,.45);
-  runeText(S*.88,t*.05,.72);
-  ctx.restore();
+            getRandomColor() {
+                const rand = Math.random();
+                if (rand < 0.33) return LIGHT_PINK;
+                if (rand < 0.66) return BLUE_GLOW;
+                return WHITE;
+            }
 
-  // morph layer: current -> next
-  ctx.save();ctx.rotate(t*.28);
-  drawShape(shapes[idx],S*.68,t*.5,1-e);
-  ctx.save();ctx.rotate(Math.PI*e*.5);
-  drawShape(shapes[next],S*(.68+e*.08),-t*.35,e);
-  ctx.restore();
-  ctx.restore();
+            update() {
+                const dx = this.targetX - this.x;
+                const dy = this.targetY - this.y;
 
-  // multiple independently rotating rings
-  for(let k=0;k<7;k++){
-    const rr=S*(.12+k*.105);
-    ctx.save();
-    ctx.rotate((k%2?-.32:.21)*t*(1+k*.13));
-    drawShape(k%3===0?"circle":(k%3===1?"polygon"+(5+k%4):"flower"+(k%2?8:6)),rr,t*(.15+k*.04),.45);
-    ctx.restore();
-  }
+                // Kiểm tra xem hạt đã đến đích chưa
+                if (Math.abs(dx) < 2 && Math.abs(dy) < 2) {
+                    this.arrived = true;
+                    // Hiệu ứng rung lắc khi đã vào vị trí
+                    this.wobblePhase += 0.05;
+                    this.x = this.targetX + Math.sin(this.wobblePhase) * this.wobbleAmt;
+                    this.y = this.targetY + Math.cos(this.wobblePhase) * this.wobbleAmt;
+                } else {
+                    // Di chuyển mượt mà về đích
+                    this.x += dx * this.speed;
+                    this.y += dy * this.speed;
+                }
+            }
 
-  // orbiting nodes
-  for(let i=0;i<12;i++){
-    const a=i*TAU/12+t*(i%2?.42:-.3);
-    const rr=S*(.73+.04*Math.sin(t*2+i));
-    const x=Math.cos(a)*rr,y=Math.sin(a)*rr;
-    ctx.beginPath();ctx.arc(x,y,3+2*Math.sin(t*3+i),0,TAU);ctx.fill();
-  }
+            draw() {
+                // 1. Vẽ hạt chính (Particle Body)
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(${this.baseColor}, ${this.alpha})`;
+                ctx.fill();
 
-  // central core
-  ctx.save();ctx.rotate(-t*.8);
-  drawShape("hexagram",S*.20,t,1);
-  drawShape("orbital",S*.28,-t,0.9);
-  ctx.beginPath();ctx.arc(0,0,S*.055,0,TAU);ctx.fill();
-  ctx.restore();
+                // 2. Vẽ quầng sáng (Glow Effect) - giống đoạn code Pygame trong ảnh
+                if (this.arrived) {
+                    ctx.beginPath();
+                    // Vẽ hình tròn lớn hơn với màu hồng nhạt và độ mờ thấp
+                    const glowSize = this.size * 4;
+                    const gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, glowSize);
+                    
+                    // Tâm sáng
+                    gradient.addColorStop(0, `rgba(${LIGHT_PINK}, ${this.alpha * 0.4})`);
+                    // Rìa mờ dần
+                    gradient.addColorStop(1, `rgba(${LIGHT_PINK}, 0)`);
+                    
+                    ctx.fillStyle = gradient;
+                    ctx.arc(this.x, this.y, glowSize, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+        }
 
-  ctx.restore();
-  requestAnimationFrame(render);
-}
-requestAnimationFrame(render);
+        // Khởi tạo các hạt
+        function initParticles() {
+            particles = [];
+            const heartPoints = generateHeartPoints(NUM_PARTICLES);
+            
+            for (let i = 0; i < NUM_PARTICLES; i++) {
+                const target = heartPoints[i];
+                particles.push(new Particle(target.x, target.y));
+            }
+        }
 
-document.getElementById("pause").onclick=()=>{
-  paused=!paused;
-  document.getElementById("pause").textContent=paused?"Tiếp tục":"Tạm dừng";
-};
-document.getElementById("next").onclick=()=>{
-  // jump to the next morph phase
-  t=Math.ceil(t*.34+0.001)/.34;
-};
-document.getElementById("speed").oninput=e=>manualSpeed=+e.target.value;
-</script>
+        // Vòng lặp Animation
+        function animate() {
+            // Xóa màn hình với màu đen mờ (tạo vệt mờ - trail effect)
+            // Nếu muốn xóa hoàn toàn, dùng: ctx.clearRect(0, 0, width, height);
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.2)'; 
+            ctx.fillRect(0, 0, width, height);
+
+            // Cập nhật và vẽ từng hạt
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+
+            requestAnimationFrame(animate);
+        }
+
+        // Bắt đầu
+        window.addEventListener('resize', resize);
+        resize(); // Khởi tạo kích thước ban đầu
+        animate(); // Bắt đầu vòng lặp
+
+    </script>
 </body>
 </html>
