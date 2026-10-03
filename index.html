@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ma Pháp Trận Huyền Ảo</title>
+    <title>Ma Pháp Trận 3D Huyền Ảo</title>
     <style>
         body, html {
             margin: 0;
@@ -12,7 +12,8 @@
             height: 100%;
             overflow: hidden;
             background-color: #000;
-            background-image: radial-gradient(circle at center, #0a0a1a 0%, #000 100%);
+            /* Nền đen tuyền với chút xanh đen ở giữa */
+            background: radial-gradient(circle at center, #050a15 0%, #000000 70%);
         }
         canvas {
             display: block;
@@ -22,7 +23,6 @@
     </style>
 </head>
 <body>
-
     <canvas id="magicCanvas"></canvas>
 
     <script>
@@ -31,105 +31,124 @@
 
         let width, height;
         let centerX, centerY;
-        let time = 0; // Biến thời gian để tạo hiệu ứng mượt mà
+        let time = 0;
 
-        // Cấu hình Ma Pháp Trận
+        // Cấu hình Ma Pháp Trận 3D
         const CONFIG = {
-            numRings: 5,           // Số lượng vòng tròn
-            particlesPerRing: 150, // Số hạt trên mỗi vòng
-            baseRadius: 60,        // Bán kính vòng trong cùng
-            radiusStep: 50,        // Khoảng cách giữa các vòng
-            rotationSpeed: 0.005,  // Tốc độ xoay
-            breathSpeed: 0.02,     // Tốc độ co giãn (thở)
-            breathAmt: 10,         // Độ co giãn
+            numRings: 6,             // Số lượng vòng tròn
+            baseRadius: 50,          // Bán kính vòng trong cùng
+            radiusStep: 45,          // Khoảng cách giữa các vòng
+            particlesPerRing: 120,   // Số hạt cơ bản trên mỗi vòng
+            
+            // Màu sắc chủ đạo (Xanh lam, Trắng, Tím nhạt)
             colors: [
-                { r: 100, g: 200, b: 255 }, // Xanh lam
+                { r: 100, g: 200, b: 255 }, // Xanh lam sáng
                 { r: 255, g: 255, b: 255 }, // Trắng
-                { r: 200, g: 100, b: 255 }, // Tím
-                { r: 100, g: 255, b: 200 }  // Xanh ngọc
+                { r: 200, g: 150, b: 255 }, // Tím nhạt
+                { r: 150, g: 255, b: 255 }  // Xanh ngọc
             ]
         };
 
         let particles = [];
+        let floatingParticles = [];
+        let coreParticles = [];
 
         function resize() {
             width = canvas.width = window.innerWidth;
             height = canvas.height = window.innerHeight;
             centerX = width / 2;
             centerY = height / 2;
-            initParticles();
+            
+            // Scale tổng thể theo màn hình
+            const scale = Math.min(width, height) / 800; 
+            initParticles(scale);
         }
 
-        class Particle {
-            constructor(radius, angle, ringIndex) {
-                this.baseRadius = radius;
-                this.angle = angle;
+        // --- Lớp Hạt Trên Vòng Tròn (Ring Particles) ---
+        class RingParticle {
+            constructor(radius, ringIndex, scale) {
+                this.baseRadius = radius * scale;
                 this.ringIndex = ringIndex;
                 
-                // Mỗi vòng xoay một hướng và tốc độ khác nhau
-                this.speed = (ringIndex % 2 === 0 ? 1 : -1) * (CONFIG.rotationSpeed + ringIndex * 0.001);
+                // Góc ban đầu ngẫu nhiên
+                this.angle = Math.random() * Math.PI * 2;
+                
+                // Tốc độ xoay (vòng chẵn xoay thuận, vòng lẻ xoay ngược)
+                this.speed = (ringIndex % 2 === 0 ? 1 : -1) * (0.002 + ringIndex * 0.0005);
+                
+                // Độ nghiêng của vòng (tạo hiệu ứng 3D)
+                // Mỗi vòng nghiêng một góc khác nhau
+                this.tilt = Math.sin(ringIndex) * 0.5; 
                 
                 // Kích thước hạt
                 this.size = Math.random() * 2 + 1;
                 
-                // Màu sắc ngẫu nhiên
+                // Màu sắc
                 this.color = CONFIG.colors[Math.floor(Math.random() * CONFIG.colors.length)];
                 
                 // Độ sáng nhấp nháy
-                this.alpha = Math.random() * 0.5 + 0.3;
-                this.alphaSpeed = Math.random() * 0.05 + 0.02;
+                this.alpha = Math.random() * 0.5 + 0.5;
+                this.alphaSpeed = Math.random() * 0.03 + 0.01;
                 
-                // Độ lệch ngẫu nhiên để trông tự nhiên hơn (không thẳng tắp)
-                this.offset = (Math.random() - 0.5) * 5;
-                
-                // Hình dạng: 0 = tròn, 1 = thoi (sao), 2 = vuông nhỏ
-                this.shape = Math.random() > 0.85 ? 1 : (Math.random() > 0.9 ? 2 : 0);
+                // Độ lệch ngẫu nhiên (tạo cảm giác lởm chởm)
+                this.offset = (Math.random() - 0.5) * 8;
             }
 
             update() {
-                // Xoay
                 this.angle += this.speed;
-                
-                // Nhấp nháy độ sáng
                 this.alpha += this.alphaSpeed;
-                if (this.alpha > 1 || this.alpha < 0.2) {
+                if (this.alpha > 1 || this.alpha < 0.3) {
                     this.alphaSpeed *= -1;
                 }
             }
 
             draw() {
-                // Tính toán bán kính có hiệu ứng "thở" (co giãn)
-                const breath = Math.sin(time * CONFIG.breathSpeed + this.ringIndex) * CONFIG.breathAmt;
-                const currentRadius = this.baseRadius + breath + this.offset;
+                // Tính toán tọa độ 3D giả lập
+                const r = this.baseRadius + this.offset;
                 
-                // Tính tọa độ
-                const x = centerX + Math.cos(this.angle) * currentRadius;
-                const y = centerY + Math.sin(this.angle) * currentRadius;
+                // Tọa độ trên mặt phẳng 2D
+                let x = Math.cos(this.angle) * r;
+                let y = Math.sin(this.angle) * r;
+
+                // Áp dụng độ nghiêng (Tilt) để tạo hiệu ứng 3D
+                // Công thức xoay quanh trục X
+                const cosTilt = Math.cos(this.tilt);
+                const sinTilt = Math.sin(this.tilt);
+                
+                // Y mới sau khi nghiêng
+                const newY = y * cosTilt;
+                // Z (độ sâu) - dùng để thay đổi kích thước và độ mờ
+                const z = y * sinTilt;
+
+                // Tính toán vị trí cuối cùng
+                const finalX = centerX + x;
+                const finalY = centerY + newY;
+
+                // Hiệu ứng phối cảnh: Hạt ở xa (z âm) sẽ nhỏ và mờ hơn
+                const perspective = 1 + z / 500; 
+                const finalSize = this.size * perspective;
+                const finalAlpha = this.alpha * Math.max(0.1, perspective);
 
                 ctx.save();
-                ctx.translate(x, y);
-                ctx.rotate(this.angle); // Xoay hạt theo quỹ đạo
-
-                ctx.beginPath();
-                ctx.fillStyle = `rgba(${this.color.r}, ${this.color.g}, ${this.color.b}, ${this.alpha})`;
+                ctx.translate(finalX, finalY);
                 
-                // Vẽ quầng sáng (Glow)
-                ctx.shadowBlur = 10;
-                ctx.shadowColor = `rgba(${this.color.r}, ${this.color.g}, ${this.color.b}, ${this.alpha})`;
+                // Vẽ hạt
+                ctx.beginPath();
+                ctx.fillStyle = `rgba(${this.color.r}, ${this.color.g}, ${this.color.b}, ${finalAlpha})`;
+                
+                // Hiệu ứng Glow (Tỏa sáng)
+                ctx.shadowBlur = 10 * perspective;
+                ctx.shadowColor = `rgba(${this.color.r}, ${this.color.g}, ${this.color.b}, ${finalAlpha})`;
 
-                if (this.shape === 0) {
-                    // Hình tròn
-                    ctx.arc(0, 0, this.size, 0, Math.PI * 2);
-                } else if (this.shape === 1) {
-                    // Hình thoi (ngôi sao 4 cánh)
-                    ctx.moveTo(0, -this.size * 2);
-                    ctx.lineTo(this.size, 0);
-                    ctx.lineTo(0, this.size * 2);
-                    ctx.lineTo(-this.size, 0);
+                // Đôi khi vẽ hình thoi (ngôi sao) thay vì hình tròn
+                if (Math.random() > 0.9) {
+                    ctx.moveTo(0, -finalSize * 2);
+                    ctx.lineTo(finalSize, 0);
+                    ctx.lineTo(0, finalSize * 2);
+                    ctx.lineTo(-finalSize, 0);
                     ctx.closePath();
                 } else {
-                    // Hình vuông nhỏ
-                    ctx.rect(-this.size/2, -this.size/2, this.size, this.size);
+                    ctx.arc(0, 0, finalSize, 0, Math.PI * 2);
                 }
                 
                 ctx.fill();
@@ -137,37 +156,141 @@
             }
         }
 
-        function initParticles() {
+        // --- Lớp Hạt Bay Lơ Lửng (Floating Particles) ---
+        class FloatingParticle {
+            constructor(scale) {
+                // Vị trí ngẫu nhiên xung quanh tâm
+                const angle = Math.random() * Math.PI * 2;
+                const dist = Math.random() * 300 * scale + 50;
+                
+                this.x = centerX + Math.cos(angle) * dist;
+                this.y = centerY + Math.sin(angle) * dist;
+                
+                // Kích thước nhỏ
+                this.size = Math.random() * 1.5 + 0.5;
+                
+                // Tốc độ bay lơ lửng
+                this.vx = (Math.random() - 0.5) * 0.5;
+                this.vy = (Math.random() - 0.5) * 0.5;
+                
+                // Màu sắc
+                this.color = CONFIG.colors[Math.floor(Math.random() * CONFIG.colors.length)];
+                this.alpha = Math.random() * 0.5 + 0.3;
+                this.alphaSpeed = Math.random() * 0.02 + 0.005;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                
+                // Nhấp nháy
+                this.alpha += this.alphaSpeed;
+                if (this.alpha > 0.8 || this.alpha < 0.1) {
+                    this.alphaSpeed *= -1;
+                }
+                
+                // Nếu bay ra quá xa thì reset lại
+                const dist = Math.hypot(this.x - centerX, this.y - centerY);
+                if (dist > 400) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const newDist = Math.random() * 100 + 50;
+                    this.x = centerX + Math.cos(angle) * newDist;
+                    this.y = centerY + Math.sin(angle) * newDist;
+                }
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(${this.color.r}, ${this.color.g}, ${this.color.b}, ${this.alpha})`;
+                ctx.shadowBlur = 8;
+                ctx.shadowColor = `rgba(${this.color.r}, ${this.color.g}, ${this.color.b}, ${this.alpha})`;
+                ctx.fill();
+            }
+        }
+
+        // --- Lớp Hạt Lõi (Core Particles) ---
+        class CoreParticle {
+            constructor(scale) {
+                this.angle = Math.random() * Math.PI * 2;
+                this.radius = Math.random() * 30 * scale;
+                this.speed = (Math.random() - 0.5) * 0.05;
+                this.size = Math.random() * 3 + 1;
+                this.alpha = Math.random() * 0.5 + 0.5;
+                this.color = CONFIG.colors[1]; // Màu trắng
+            }
+
+            update() {
+                this.angle += this.speed;
+            }
+
+            draw() {
+                const x = centerX + Math.cos(this.angle) * this.radius;
+                const y = centerY + Math.sin(this.angle) * this.radius * 0.5; // Dẹt theo trục Y
+
+                ctx.beginPath();
+                ctx.arc(x, y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 255, 255, ${this.alpha})`;
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = `rgba(255, 255, 255, ${this.alpha})`;
+                ctx.fill();
+            }
+        }
+
+        function initParticles(scale) {
             particles = [];
-            
+            floatingParticles = [];
+            coreParticles = [];
+
+            // Tạo các vòng tròn ma pháp
             for (let r = 0; r < CONFIG.numRings; r++) {
                 const radius = CONFIG.baseRadius + r * CONFIG.radiusStep;
-                const count = CONFIG.particlesPerRing + r * 20; // Vòng ngoài nhiều hạt hơn
+                // Vòng ngoài có nhiều hạt hơn
+                const count = CONFIG.particlesPerRing + r * 30;
                 
                 for (let i = 0; i < count; i++) {
-                    const angle = (i / count) * Math.PI * 2;
-                    // Thêm chút ngẫu nhiên vào góc để không bị thẳng quá
-                    const randomAngle = angle + (Math.random() - 0.5) * 0.1;
-                    particles.push(new Particle(radius, randomAngle, r));
+                    particles.push(new RingParticle(radius, r, scale));
                 }
+            }
+
+            // Tạo hạt bay lơ lửng
+            for (let i = 0; i < 100; i++) {
+                floatingParticles.push(new FloatingParticle(scale));
+            }
+
+            // Tạo hạt lõi
+            for (let i = 0; i < 50; i++) {
+                coreParticles.push(new CoreParticle(scale));
             }
         }
 
         function animate() {
-            // Xóa màn hình với hiệu ứng vệt mờ (Trail)
+            // Xóa màn hình với hiệu ứng vệt mờ (Trail) để tạo cảm giác mượt mà
             ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
             ctx.fillRect(0, 0, width, height);
 
-            time += 0.1;
+            time += 0.05;
 
-            // Vẽ các hạt
+            // 1. Vẽ các vòng tròn nền (mờ) để tạo cấu trúc
+            drawBackgroundRings();
+
+            // 2. Vẽ các hạt lõi
+            coreParticles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+
+            // 3. Vẽ các hạt trên vòng tròn
             particles.forEach(p => {
                 p.update();
                 p.draw();
             });
 
-            // Vẽ thêm các vòng tròn mờ (nền) để tạo cảm giác trận pháp có cấu trúc
-            drawBackgroundRings();
+            // 4. Vẽ các hạt bay lơ lửng
+            floatingParticles.forEach(p => {
+                p.update();
+                p.draw();
+            });
 
             requestAnimationFrame(animate);
         }
@@ -176,22 +299,27 @@
             ctx.save();
             ctx.translate(centerX, centerY);
             
+            const scale = Math.min(width, height) / 800;
+
             for (let r = 0; r < CONFIG.numRings; r++) {
-                const breath = Math.sin(time * CONFIG.breathSpeed + r) * CONFIG.breathAmt;
-                const radius = CONFIG.baseRadius + r * CONFIG.radiusStep + breath;
+                const radius = (CONFIG.baseRadius + r * CONFIG.radiusStep) * scale;
+                const tilt = Math.sin(r) * 0.5; // Độ nghiêng
                 
-                ctx.beginPath();
+                ctx.save();
+                // Áp dụng độ nghiêng
+                ctx.rotate(time * 0.005 * (r % 2 === 0 ? 1 : -1));
+                ctx.scale(1, Math.cos(tilt)); // Nén trục Y để tạo hình elip
+
                 // Vẽ vòng tròn mờ
-                ctx.strokeStyle = `rgba(100, 200, 255, 0.05)`;
+                ctx.beginPath();
+                ctx.strokeStyle = `rgba(100, 200, 255, 0.1)`;
                 ctx.lineWidth = 1;
                 ctx.arc(0, 0, radius, 0, Math.PI * 2);
                 ctx.stroke();
 
-                // Vẽ các vạch chia độ (như trong ảnh)
-                if (r % 2 === 0) {
-                    ctx.save();
-                    ctx.rotate(time * 0.01 * (r % 2 === 0 ? 1 : -1));
-                    const ticks = 36;
+                // Vẽ các vạch chia độ (Ticks) cho các vòng lớn
+                if (r > 2) {
+                    const ticks = 72;
                     for (let i = 0; i < ticks; i++) {
                         const tickAngle = (i / ticks) * Math.PI * 2;
                         const x1 = Math.cos(tickAngle) * (radius - 5);
@@ -200,22 +328,20 @@
                         const y2 = Math.sin(tickAngle) * (radius + 5);
                         
                         ctx.beginPath();
-                        ctx.strokeStyle = `rgba(100, 200, 255, 0.1)`;
+                        ctx.strokeStyle = `rgba(100, 200, 255, 0.15)`;
                         ctx.moveTo(x1, y1);
                         ctx.lineTo(x2, y2);
                         ctx.stroke();
                     }
-                    ctx.restore();
                 }
+                ctx.restore();
             }
             ctx.restore();
         }
 
-        // Bắt đầu
         window.addEventListener('resize', resize);
         resize();
         animate();
-
     </script>
 </body>
 </html>
