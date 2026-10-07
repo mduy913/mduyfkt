@@ -1,347 +1,511 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ma Pháp Trận 3D Huyền Ảo</title>
-    <style>
-        body, html {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            background-color: #000;
-            /* Nền đen tuyền với chút xanh đen ở giữa */
-            background: radial-gradient(circle at center, #050a15 0%, #000000 70%);
-        }
-        canvas {
-            display: block;
-            width: 100%;
-            height: 100%;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🔐 Mã hoá Tool - MDUY</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: linear-gradient(135deg, #0a0a1a 0%, #1a0a2a 100%);
+    color: #fff;
+    min-height: 100vh;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.container {
+    max-width: 900px;
+    width: 100%;
+}
+h1 {
+    text-align: center;
+    font-size: 24px;
+    margin-bottom: 8px;
+    background: linear-gradient(135deg, #a855f7, #ec4899);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 800;
+}
+.subtitle {
+    text-align: center;
+    font-size: 13px;
+    color: #888;
+    margin-bottom: 24px;
+}
+.card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(168,85,247,0.3);
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 16px;
+}
+.label {
+    font-size: 12px;
+    font-weight: 700;
+    color: #a855f7;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+textarea {
+    width: 100%;
+    min-height: 180px;
+    background: rgba(0,0,0,0.5);
+    border: 1px solid rgba(168,85,247,0.4);
+    border-radius: 10px;
+    color: #fff;
+    padding: 12px;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    resize: vertical;
+    outline: none;
+    line-height: 1.5;
+}
+textarea:focus { border-color: #a855f7; box-shadow: 0 0 15px rgba(168,85,247,0.3); }
+.options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin: 12px 0;
+}
+.option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px;
+    background: rgba(0,0,0,0.3);
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: pointer;
+    border: 1px solid rgba(168,85,247,0.2);
+    transition: 0.2s;
+}
+.option:hover { border-color: rgba(168,85,247,0.5); }
+.option input { accent-color: #a855f7; }
+button {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, #a855f7, #ec4899);
+    border: none;
+    border-radius: 10px;
+    color: #fff;
+    font-weight: 800;
+    font-size: 15px;
+    cursor: pointer;
+    transition: 0.2s;
+    letter-spacing: 1px;
+}
+button:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(168,85,247,0.4); }
+button:active { transform: translateY(0); }
+button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.status {
+    font-size: 12px;
+    text-align: center;
+    padding: 10px;
+    color: #22c55e;
+    min-height: 36px;
+}
+.status.error { color: #ef4444; }
+.status.loading { color: #f59e0b; }
+.stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    margin: 12px 0;
+}
+.stat {
+    background: rgba(0,0,0,0.3);
+    padding: 12px;
+    border-radius: 8px;
+    text-align: center;
+    border: 1px solid rgba(168,85,247,0.2);
+}
+.stat-value {
+    font-size: 18px;
+    font-weight: 800;
+    color: #a855f7;
+}
+.stat-label {
+    font-size: 10px;
+    color: #888;
+    text-transform: uppercase;
+    margin-top: 4px;
+}
+.copy-btn {
+    background: rgba(34,197,94,0.2);
+    border: 1px solid rgba(34,197,94,0.5);
+    color: #22c55e;
+    padding: 12px;
+    margin-top: 8px;
+    font-weight: 700;
+}
+.copy-btn:hover { background: rgba(34,197,94,0.3); }
+</style>
 </head>
 <body>
-    <canvas id="magicCanvas"></canvas>
 
-    <script>
-        const canvas = document.getElementById('magicCanvas');
-        const ctx = canvas.getContext('2d');
+<div class="container">
+    <h1>🔐 MÃ HOÁ TOOL - MDUY</h1>
+    <div class="subtitle">Mã hoá code thành chuỗi vô nghĩa, không thể dịch ngược</div>
 
-        let width, height;
-        let centerX, centerY;
-        let time = 0;
+    <div class="card">
+        <div class="label">📥 Dán code V9.0 vào đây:</div>
+        <textarea id="input" placeholder="Dán toàn bộ code tool vào đây (kể cả header @ ==UserScript==)..." spellcheck="false"></textarea>
+    </div>
 
-        // Cấu hình Ma Pháp Trận 3D
-        const CONFIG = {
-            numRings: 6,             // Số lượng vòng tròn
-            baseRadius: 50,          // Bán kính vòng trong cùng
-            radiusStep: 45,          // Khoảng cách giữa các vòng
-            particlesPerRing: 120,   // Số hạt cơ bản trên mỗi vòng
-            
-            // Màu sắc chủ đạo (Xanh lam, Trắng, Tím nhạt)
-            colors: [
-                { r: 100, g: 200, b: 255 }, // Xanh lam sáng
-                { r: 255, g: 255, b: 255 }, // Trắng
-                { r: 200, g: 150, b: 255 }, // Tím nhạt
-                { r: 150, g: 255, b: 255 }  // Xanh ngọc
-            ]
-        };
+    <div class="card">
+        <div class="label">⚙️ Tuỳ chọn mã hoá:</div>
+        <div class="options">
+            <label class="option">
+                <input type="checkbox" id="opt-nen" checked>
+                <span>Nén GZIP (nhỏ hơn 80%)</span>
+            </label>
+            <label class="option">
+                <input type="checkbox" id="opt-aes" checked>
+                <span>Mã hoá AES-256 (mạnh nhất)</span>
+            </label>
+            <label class="option">
+                <input type="checkbox" id="opt-xor" checked>
+                <span>XOR thêm 1 lớp (3 tầng)</span>
+            </label>
+            <label class="option">
+                <input type="checkbox" id="opt-antidbg" checked>
+                <span>Chống Debug (DevTools)</span>
+            </label>
+            <label class="option">
+                <input type="checkbox" id="opt-antitamper" checked>
+                <span>Chống sửa code</span>
+            </label>
+            <label class="option">
+                <input type="checkbox" id="opt-minify" checked>
+                <span>Làm rối tên biến</span>
+            </label>
+        </div>
+    </div>
 
-        let particles = [];
-        let floatingParticles = [];
-        let coreParticles = [];
+    <button id="encrypt-btn">🔐 BẮT ĐẦU MÃ HOÁ</button>
 
-        function resize() {
-            width = canvas.width = window.innerWidth;
-            height = canvas.height = window.innerHeight;
-            centerX = width / 2;
-            centerY = height / 2;
-            
-            // Scale tổng thể theo màn hình
-            const scale = Math.min(width, height) / 800; 
-            initParticles(scale);
+    <div class="status" id="status">Sẵn sàng</div>
+
+    <div class="stats" id="stats" style="display:none;">
+        <div class="stat">
+            <div class="stat-value" id="stat-input">0</div>
+            <div class="stat-label">Input (KB)</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value" id="stat-output">0</div>
+            <div class="stat-label">Output (KB)</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value" id="stat-ratio">0%</div>
+            <div class="stat-label">Tỉ lệ</div>
+        </div>
+    </div>
+
+    <div class="card" id="output-card" style="display:none;">
+        <div class="label">✅ Code đã mã hoá — Copy & paste vào Tampermonkey:</div>
+        <textarea id="output" readonly spellcheck="false"></textarea>
+        <button class="copy-btn" id="copy-btn">📋 COPY CODE ĐÃ MÃ HOÁ</button>
+    </div>
+</div>
+
+<script>
+(function() {
+    'use strict';
+
+    var $ = function(id) { return document.getElementById(id); };
+
+    function setStatus(text, type) {
+        var el = $('status');
+        el.textContent = text;
+        el.className = 'status' + (type ? ' ' + type : '');
+    }
+
+    // ==== NÉN GZIP ====
+    async function gzip(str) {
+        var cs = new CompressionStream('gzip');
+        var writer = cs.writable.getWriter();
+        writer.write(new TextEncoder().encode(str));
+        writer.close();
+        var reader = cs.readable.getReader();
+        var chunks = [];
+        while (true) {
+            var r = await reader.read();
+            if (r.done) break;
+            chunks.push(r.value);
         }
+        var total = 0;
+        chunks.forEach(function(c) { total += c.length; });
+        var out = new Uint8Array(total);
+        var off = 0;
+        chunks.forEach(function(c) { out.set(c, off); off += c.length; });
+        return out;
+    }
 
-        // --- Lớp Hạt Trên Vòng Tròn (Ring Particles) ---
-        class RingParticle {
-            constructor(radius, ringIndex, scale) {
-                this.baseRadius = radius * scale;
-                this.ringIndex = ringIndex;
-                
-                // Góc ban đầu ngẫu nhiên
-                this.angle = Math.random() * Math.PI * 2;
-                
-                // Tốc độ xoay (vòng chẵn xoay thuận, vòng lẻ xoay ngược)
-                this.speed = (ringIndex % 2 === 0 ? 1 : -1) * (0.002 + ringIndex * 0.0005);
-                
-                // Độ nghiêng của vòng (tạo hiệu ứng 3D)
-                // Mỗi vòng nghiêng một góc khác nhau
-                this.tilt = Math.sin(ringIndex) * 0.5; 
-                
-                // Kích thước hạt
-                this.size = Math.random() * 2 + 1;
-                
-                // Màu sắc
-                this.color = CONFIG.colors[Math.floor(Math.random() * CONFIG.colors.length)];
-                
-                // Độ sáng nhấp nháy
-                this.alpha = Math.random() * 0.5 + 0.5;
-                this.alphaSpeed = Math.random() * 0.03 + 0.01;
-                
-                // Độ lệch ngẫu nhiên (tạo cảm giác lởm chởm)
-                this.offset = (Math.random() - 0.5) * 8;
-            }
+    // ==== BASE64 ====
+    function toB64(bytes) {
+        var bin = '';
+        for (var i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+        return btoa(bin);
+    }
 
-            update() {
-                this.angle += this.speed;
-                this.alpha += this.alphaSpeed;
-                if (this.alpha > 1 || this.alpha < 0.3) {
-                    this.alphaSpeed *= -1;
-                }
-            }
+    function fromB64(b64) {
+        var bin = atob(b64);
+        var bytes = new Uint8Array(bin.length);
+        for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+        return bytes;
+    }
 
-            draw() {
-                // Tính toán tọa độ 3D giả lập
-                const r = this.baseRadius + this.offset;
-                
-                // Tọa độ trên mặt phẳng 2D
-                let x = Math.cos(this.angle) * r;
-                let y = Math.sin(this.angle) * r;
+    // ==== AES-256 ====
+    async function getKey(pass) {
+        var enc = new TextEncoder();
+        var keyMaterial = await crypto.subtle.importKey(
+            'raw', enc.encode(pass), { name: 'PBKDF2' }, false, ['deriveKey']
+        );
+        return await crypto.subtle.deriveKey(
+            { name: 'PBKDF2', salt: enc.encode('MDUY_SALT_2026'), iterations: 100000, hash: 'SHA-256' },
+            keyMaterial,
+            { name: 'AES-GCM', length: 256 },
+            false,
+            ['encrypt', 'decrypt']
+        );
+    }
 
-                // Áp dụng độ nghiêng (Tilt) để tạo hiệu ứng 3D
-                // Công thức xoay quanh trục X
-                const cosTilt = Math.cos(this.tilt);
-                const sinTilt = Math.sin(this.tilt);
-                
-                // Y mới sau khi nghiêng
-                const newY = y * cosTilt;
-                // Z (độ sâu) - dùng để thay đổi kích thước và độ mờ
-                const z = y * sinTilt;
+    async function aesEncrypt(bytes, pass) {
+        var key = await getKey(pass);
+        var iv = crypto.getRandomValues(new Uint8Array(12));
+        var enc = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, key, bytes);
+        var out = new Uint8Array(iv.length + enc.byteLength);
+        out.set(iv, 0);
+        out.set(new Uint8Array(enc), iv.length);
+        return out;
+    }
 
-                // Tính toán vị trí cuối cùng
-                const finalX = centerX + x;
-                const finalY = centerY + newY;
-
-                // Hiệu ứng phối cảnh: Hạt ở xa (z âm) sẽ nhỏ và mờ hơn
-                const perspective = 1 + z / 500; 
-                const finalSize = this.size * perspective;
-                const finalAlpha = this.alpha * Math.max(0.1, perspective);
-
-                ctx.save();
-                ctx.translate(finalX, finalY);
-                
-                // Vẽ hạt
-                ctx.beginPath();
-                ctx.fillStyle = `rgba(${this.color.r}, ${this.color.g}, ${this.color.b}, ${finalAlpha})`;
-                
-                // Hiệu ứng Glow (Tỏa sáng)
-                ctx.shadowBlur = 10 * perspective;
-                ctx.shadowColor = `rgba(${this.color.r}, ${this.color.g}, ${this.color.b}, ${finalAlpha})`;
-
-                // Đôi khi vẽ hình thoi (ngôi sao) thay vì hình tròn
-                if (Math.random() > 0.9) {
-                    ctx.moveTo(0, -finalSize * 2);
-                    ctx.lineTo(finalSize, 0);
-                    ctx.lineTo(0, finalSize * 2);
-                    ctx.lineTo(-finalSize, 0);
-                    ctx.closePath();
-                } else {
-                    ctx.arc(0, 0, finalSize, 0, Math.PI * 2);
-                }
-                
-                ctx.fill();
-                ctx.restore();
-            }
+    // ==== XOR ====
+    function xor(bytes, key) {
+        var k = new TextEncoder().encode(key);
+        var out = new Uint8Array(bytes.length);
+        for (var i = 0; i < bytes.length; i++) {
+            out[i] = bytes[i] ^ k[i % k.length];
         }
+        return out;
+    }
 
-        // --- Lớp Hạt Bay Lơ Lửng (Floating Particles) ---
-        class FloatingParticle {
-            constructor(scale) {
-                // Vị trí ngẫu nhiên xung quanh tâm
-                const angle = Math.random() * Math.PI * 2;
-                const dist = Math.random() * 300 * scale + 50;
-                
-                this.x = centerX + Math.cos(angle) * dist;
-                this.y = centerY + Math.sin(angle) * dist;
-                
-                // Kích thước nhỏ
-                this.size = Math.random() * 1.5 + 0.5;
-                
-                // Tốc độ bay lơ lửng
-                this.vx = (Math.random() - 0.5) * 0.5;
-                this.vy = (Math.random() - 0.5) * 0.5;
-                
-                // Màu sắc
-                this.color = CONFIG.colors[Math.floor(Math.random() * CONFIG.colors.length)];
-                this.alpha = Math.random() * 0.5 + 0.3;
-                this.alphaSpeed = Math.random() * 0.02 + 0.005;
+    // ==== GENERATE KEY NGẪU NHIÊN ====
+    function genKey() {
+        var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        var s = '';
+        for (var i = 0; i < 32; i++) s += chars[Math.floor(Math.random() * chars.length)];
+        return s;
+    }
+
+    // ==== MAIN ====
+    $('encrypt-btn').onclick = async function() {
+        var btn = $('encrypt-btn');
+        btn.disabled = true;
+        setStatus('⏳ Đang xử lý...', 'loading');
+
+        try {
+            var input = $('input').value.trim();
+            if (!input) {
+                setStatus('❌ Chưa có code để mã hoá!', 'error');
+                btn.disabled = false;
+                return;
             }
 
-            update() {
-                this.x += this.vx;
-                this.y += this.vy;
-                
-                // Nhấp nháy
-                this.alpha += this.alphaSpeed;
-                if (this.alpha > 0.8 || this.alpha < 0.1) {
-                    this.alphaSpeed *= -1;
-                }
-                
-                // Nếu bay ra quá xa thì reset lại
-                const dist = Math.hypot(this.x - centerX, this.y - centerY);
-                if (dist > 400) {
-                    const angle = Math.random() * Math.PI * 2;
-                    const newDist = Math.random() * 100 + 50;
-                    this.x = centerX + Math.cos(angle) * newDist;
-                    this.y = centerY + Math.sin(angle) * newDist;
-                }
+            // Tách header và body
+            var header = '';
+            var body = input;
+            var match = input.match(/\/\/ ==UserScript==[\s\S]*?\/\/ ==\/UserScript==/);
+            if (match) {
+                header = match[0];
+                body = input.replace(header, '').trim();
             }
 
-            draw() {
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(${this.color.r}, ${this.color.g}, ${this.color.b}, ${this.alpha})`;
-                ctx.shadowBlur = 8;
-                ctx.shadowColor = `rgba(${this.color.r}, ${this.color.g}, ${this.color.b}, ${this.alpha})`;
-                ctx.fill();
+            var inputSize = new Blob([input]).size;
+
+            setStatus('🗜️ Đang nén GZIP...', 'loading');
+            var bytes = new TextEncoder().encode(body);
+
+            if ($('opt-nen').checked) {
+                bytes = await gzip(body);
             }
+
+            setStatus('🔐 Đang mã hoá AES-256...', 'loading');
+            var secretKey = genKey();
+
+            if ($('opt-aes').checked) {
+                bytes = await aesEncrypt(bytes, secretKey);
+            }
+
+            if ($('opt-xor').checked) {
+                bytes = xor(bytes, secretKey.split('').reverse().join(''));
+            }
+
+            setStatus('📦 Đang đóng gói Base64...', 'loading');
+            var b64 = toB64(bytes);
+
+            // Chia chuỗi thành các chunk nhỏ để tránh bị phát hiện
+            var chunks = [];
+            var chunkSize = 1000;
+            for (var i = 0; i < b64.length; i += chunkSize) {
+                chunks.push(b64.substr(i, chunkSize));
+            }
+
+            // Tạo wrapper tự giải mã
+            var wrapper = buildWrapper(header, chunks, secretKey);
+
+            var outputSize = new Blob([wrapper]).size;
+
+            $('output').value = wrapper;
+            $('output-card').style.display = 'block';
+            $('stats').style.display = 'grid';
+            $('stat-input').textContent = (inputSize / 1024).toFixed(1);
+            $('stat-output').textContent = (outputSize / 1024).toFixed(1);
+            $('stat-ratio').textContent = Math.round(outputSize / inputSize * 100) + '%';
+
+            setStatus('✅ Mã hoá thành công! Copy code bên dưới.', 'success');
+            btn.disabled = false;
+
+        } catch(err) {
+            console.error(err);
+            setStatus('❌ Lỗi: ' + err.message, 'error');
+            btn.disabled = false;
         }
+    };
 
-        // --- Lớp Hạt Lõi (Core Particles) ---
-        class CoreParticle {
-            constructor(scale) {
-                this.angle = Math.random() * Math.PI * 2;
-                this.radius = Math.random() * 30 * scale;
-                this.speed = (Math.random() - 0.5) * 0.05;
-                this.size = Math.random() * 3 + 1;
-                this.alpha = Math.random() * 0.5 + 0.5;
-                this.color = CONFIG.colors[1]; // Màu trắng
-            }
+    // ==== BUILD WRAPPER ====
+    function buildWrapper(header, chunks, key) {
+        // Mã hoá key bằng Base64 nhiều lớp
+        var keyB64 = btoa(btoa(btoa(key)));
 
-            update() {
-                this.angle += this.speed;
-            }
+        // Chia key thành nhiều mảnh
+        var k1 = keyB64.substring(0, Math.floor(keyB64.length / 3));
+        var k2 = keyB64.substring(Math.floor(keyB64.length / 3), Math.floor(keyB64.length * 2 / 3));
+        var k3 = keyB64.substring(Math.floor(keyB64.length * 2 / 3));
 
-            draw() {
-                const x = centerX + Math.cos(this.angle) * this.radius;
-                const y = centerY + Math.sin(this.angle) * this.radius * 0.5; // Dẹt theo trục Y
+        // Tạo mảng chunks từ mảng
+        var chunkArray = chunks.map(function(c) { return "'" + c + "'"; }).join(',');
 
-                ctx.beginPath();
-                ctx.arc(x, y, this.size, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(255, 255, 255, ${this.alpha})`;
-                ctx.shadowBlur = 15;
-                ctx.shadowColor = `rgba(255, 255, 255, ${this.alpha})`;
-                ctx.fill();
-            }
-        }
+        return header + '\n\n' +
+'(function(){\n' +
+'    "use strict";\n' +
+'    var _0x1 = function() {\n' +
+'        var _a = window.atob, _b = window.Uint8Array, _c = window.TextDecoder;\n' +
+'        var _d = ' + chunkArray + ';\n' +
+'        return _d;\n' +
+'    };\n' +
+'    var _0x2 = function(s) {\n' +
+'        try {\n' +
+'            var _r = [];\n' +
+'            for (var _i = 0; _i < s.length; _i += 4) {\n' +
+'                var _n = s.charCodeAt(_i);\n' +
+'                if (_n) _r.push(_n);\n' +
+'            }\n' +
+'            return _r;\n' +
+'        } catch(e) { return []; }\n' +
+'    };\n' +
+'    var _0x3 = "' + k1 + '";\n' +
+'    var _0x4 = "' + k2 + '";\n' +
+'    var _0x5 = "' + k3 + '";\n' +
+'    var _0x6 = function() {\n' +
+'        try {\n' +
+'            var _s = _0x3 + _0x4 + _0x5;\n' +
+'            _s = atob(atob(atob(_s)));\n' +
+'            return _s;\n' +
+'        } catch(e) { return ""; }\n' +
+'    };\n' +
+'    var _0x7 = function(b64, key) {\n' +
+'        try {\n' +
+'            var bin = atob(b64);\n' +
+'            var arr = new Uint8Array(bin.length);\n' +
+'            for (var i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);\n' +
+'            var k = new TextEncoder().encode(key.split("").reverse().join(""));\n' +
+'            for (var i = 0; i < arr.length; i++) arr[i] ^= k[i % k.length];\n' +
+'            return arr;\n' +
+'        } catch(e) { return new Uint8Array(0); }\n' +
+'    };\n' +
+'    var _0x8 = async function(bytes, pass) {\n' +
+'        try {\n' +
+'            var enc = new TextEncoder();\n' +
+'            var km = await crypto.subtle.importKey("raw", enc.encode(pass), {name:"PBKDF2"}, false, ["deriveKey"]);\n' +
+'            var k = await crypto.subtle.deriveKey(\n' +
+'                {name:"PBKDF2",salt:enc.encode("MDUY_SALT_2026"),iterations:100000,hash:"SHA-256"},\n' +
+'                km, {name:"AES-GCM",length:256}, false, ["decrypt"]\n' +
+'            );\n' +
+'            var iv = bytes.slice(0, 12);\n' +
+'            var data = bytes.slice(12);\n' +
+'            var dec = await crypto.subtle.decrypt({name:"AES-GCM",iv:iv}, k, data);\n' +
+'            return new Uint8Array(dec);\n' +
+'        } catch(e) { throw new Error("AES decrypt failed"); }\n' +
+'    };\n' +
+'    var _0x9 = async function(bytes) {\n' +
+'        try {\n' +
+'            var ds = new DecompressionStream("gzip");\n' +
+'            var w = ds.writable.getWriter();\n' +
+'            w.write(bytes);\n' +
+'            w.close();\n' +
+'            var r = ds.readable.getReader();\n' +
+'            var chunks = [];\n' +
+'            while (true) {\n' +
+'                var _r = await r.read();\n' +
+'                if (_r.done) break;\n' +
+'                chunks.push(_r.value);\n' +
+'            }\n' +
+'            var total = 0;\n' +
+'            chunks.forEach(function(c) { total += c.length; });\n' +
+'            var out = new Uint8Array(total);\n' +
+'            var off = 0;\n' +
+'            chunks.forEach(function(c) { out.set(c, off); off += c.length; });\n' +
+'            return new TextDecoder().decode(out);\n' +
+'        } catch(e) { throw new Error("GZIP decompress failed"); }\n' +
+'    };\n' +
+'    ' + ($('opt-antidbg').checked ? '\n' +
+'    var _dbgT = new Date();\n' +
+'    (function() {})["constructor"]("debugger")();\n' +
+'    if (new Date() - _dbgT > 100) {\n' +
+'        document.body.innerHTML = "<div style=\\"position:fixed;top:0;left:0;width:100vw;height:100vh;background:#000;color:#f00;display:flex;align-items:center;justify-content:center;font-family:monospace;font-size:24px;z-index:99999999;\\">BLOCKED</div>";\n' +
+'        return;\n' +
+'    }\n' : '') + '\n' +
+'    var _0xa = async function() {\n' +
+'        try {\n' +
+'            var _chunks = _0x1();\n' +
+'            var _full = _chunks.join("");\n' +
+'            var _key = _0x6();\n' +
+'            if (!_key) return;\n' +
+'            var _bytes = _0x7(_full, _key);\n' +
+'            ' + ($('opt-aes').checked ? '_bytes = await _0x8(_bytes, _key);' : '') + '\n' +
+'            var _code;\n' +
+'            ' + ($('opt-nen').checked ? '_code = await _0x9(_bytes);' : '_code = new TextDecoder().decode(_bytes);') + '\n' +
+'            (0, eval)(_code);\n' +
+'        } catch(e) { console.log("[Tool] Silent error"); }\n' +
+'    };\n' +
+'    _0xa();\n' +
+'})();\n';
+    }
 
-        function initParticles(scale) {
-            particles = [];
-            floatingParticles = [];
-            coreParticles = [];
-
-            // Tạo các vòng tròn ma pháp
-            for (let r = 0; r < CONFIG.numRings; r++) {
-                const radius = CONFIG.baseRadius + r * CONFIG.radiusStep;
-                // Vòng ngoài có nhiều hạt hơn
-                const count = CONFIG.particlesPerRing + r * 30;
-                
-                for (let i = 0; i < count; i++) {
-                    particles.push(new RingParticle(radius, r, scale));
-                }
-            }
-
-            // Tạo hạt bay lơ lửng
-            for (let i = 0; i < 100; i++) {
-                floatingParticles.push(new FloatingParticle(scale));
-            }
-
-            // Tạo hạt lõi
-            for (let i = 0; i < 50; i++) {
-                coreParticles.push(new CoreParticle(scale));
-            }
-        }
-
-        function animate() {
-            // Xóa màn hình với hiệu ứng vệt mờ (Trail) để tạo cảm giác mượt mà
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
-            ctx.fillRect(0, 0, width, height);
-
-            time += 0.05;
-
-            // 1. Vẽ các vòng tròn nền (mờ) để tạo cấu trúc
-            drawBackgroundRings();
-
-            // 2. Vẽ các hạt lõi
-            coreParticles.forEach(p => {
-                p.update();
-                p.draw();
+    $('copy-btn').onclick = function() {
+        var ta = $('output');
+        ta.select();
+        ta.setSelectionRange(0, 999999);
+        try {
+            navigator.clipboard.writeText(ta.value).then(function() {
+                $('copy-btn').textContent = '✅ ĐÃ COPY!';
+                setTimeout(function() { $('copy-btn').textContent = '📋 COPY CODE ĐÃ MÃ HOÁ'; }, 1500);
             });
-
-            // 3. Vẽ các hạt trên vòng tròn
-            particles.forEach(p => {
-                p.update();
-                p.draw();
-            });
-
-            // 4. Vẽ các hạt bay lơ lửng
-            floatingParticles.forEach(p => {
-                p.update();
-                p.draw();
-            });
-
-            requestAnimationFrame(animate);
+        } catch(e) {
+            document.execCommand('copy');
+            $('copy-btn').textContent = '✅ ĐÃ COPY!';
+            setTimeout(function() { $('copy-btn').textContent = '📋 COPY CODE ĐÃ MÃ HOÁ'; }, 1500);
         }
+    };
 
-        function drawBackgroundRings() {
-            ctx.save();
-            ctx.translate(centerX, centerY);
-            
-            const scale = Math.min(width, height) / 800;
+    setStatus('Sẵn sàng — Dán code vào ô trên rồi nhấn nút');
+})();
+</script>
 
-            for (let r = 0; r < CONFIG.numRings; r++) {
-                const radius = (CONFIG.baseRadius + r * CONFIG.radiusStep) * scale;
-                const tilt = Math.sin(r) * 0.5; // Độ nghiêng
-                
-                ctx.save();
-                // Áp dụng độ nghiêng
-                ctx.rotate(time * 0.005 * (r % 2 === 0 ? 1 : -1));
-                ctx.scale(1, Math.cos(tilt)); // Nén trục Y để tạo hình elip
-
-                // Vẽ vòng tròn mờ
-                ctx.beginPath();
-                ctx.strokeStyle = `rgba(100, 200, 255, 0.1)`;
-                ctx.lineWidth = 1;
-                ctx.arc(0, 0, radius, 0, Math.PI * 2);
-                ctx.stroke();
-
-                // Vẽ các vạch chia độ (Ticks) cho các vòng lớn
-                if (r > 2) {
-                    const ticks = 72;
-                    for (let i = 0; i < ticks; i++) {
-                        const tickAngle = (i / ticks) * Math.PI * 2;
-                        const x1 = Math.cos(tickAngle) * (radius - 5);
-                        const y1 = Math.sin(tickAngle) * (radius - 5);
-                        const x2 = Math.cos(tickAngle) * (radius + 5);
-                        const y2 = Math.sin(tickAngle) * (radius + 5);
-                        
-                        ctx.beginPath();
-                        ctx.strokeStyle = `rgba(100, 200, 255, 0.15)`;
-                        ctx.moveTo(x1, y1);
-                        ctx.lineTo(x2, y2);
-                        ctx.stroke();
-                    }
-                }
-                ctx.restore();
-            }
-            ctx.restore();
-        }
-
-        window.addEventListener('resize', resize);
-        resize();
-        animate();
-    </script>
 </body>
 </html>
