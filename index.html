@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🔐 Mã hoá Data - MDUY V4</title>
+<title>🔐 Obfuscate Tool - MDUY</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
@@ -29,124 +29,129 @@ h1 {
     font-size: 12px; font-weight: 700; color: #a855f7;
     margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;
 }
-input[type="text"], input[type="password"], textarea {
-    width: 100%; background: rgba(0,0,0,0.5);
-    border: 1px solid rgba(168,85,247,0.4); border-radius: 10px; color: #fff;
-    padding: 12px; font-family: 'Courier New', monospace; font-size: 13px;
-    outline: none; line-height: 1.5;
+.file-input-wrapper {
+    position: relative; display: block; width: 100%; padding: 24px;
+    background: rgba(0,0,0,0.3); border: 2px dashed rgba(168,85,247,0.5);
+    border-radius: 12px; text-align: center; cursor: pointer;
+    transition: all 0.2s; margin-bottom: 10px;
 }
-input[type="text"]:focus, input[type="password"]:focus, textarea:focus {
-    border-color: #a855f7; box-shadow: 0 0 15px rgba(168,85,247,0.3);
+.file-input-wrapper:hover { border-color: #a855f7; background: rgba(168,85,247,0.05); }
+.file-input-wrapper.has-file { border-color: #22c55e; background: rgba(34,197,94,0.05); border-style: solid; }
+.file-input-wrapper input[type="file"] {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;
 }
-textarea { min-height: 80px; resize: vertical; }
-.field { margin-bottom: 12px; }
-.field-label {
-    font-size: 11px; color: #aaa; margin-bottom: 5px;
-    font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
-}
+.file-icon { font-size: 40px; margin-bottom: 8px; }
+.file-text { font-size: 14px; color: #ccc; font-weight: 700; }
+.file-sub { font-size: 11px; color: #888; margin-top: 4px; }
+.file-name { font-size: 12px; color: #22c55e; margin-top: 8px; font-weight: 700; word-break: break-all; }
 button {
-    width: 100%; padding: 14px;
-    background: linear-gradient(135deg, #a855f7, #ec4899);
+    width: 100%; padding: 16px; background: linear-gradient(135deg, #a855f7, #ec4899);
     border: none; border-radius: 10px; color: #fff; font-weight: 800;
-    font-size: 14px; cursor: pointer; transition: 0.2s;
-    letter-spacing: 1px; margin-top: 8px;
+    font-size: 15px; cursor: pointer; transition: 0.2s; letter-spacing: 1px; margin-top: 8px;
 }
 button:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(168,85,247,0.4); }
 button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-.copy-btn {
-    background: rgba(34,197,94,0.2); border: 1px solid rgba(34,197,94,0.5);
-    color: #22c55e; padding: 12px; margin-top: 8px; font-weight: 700;
-}
-.copy-btn:hover { background: rgba(34,197,94,0.3); }
 .status {
-    font-size: 12px; text-align: center; padding: 10px;
-    color: #22c55e; min-height: 36px; line-height: 1.5;
+    font-size: 12px; text-align: center; padding: 12px;
+    color: #22c55e; min-height: 40px; line-height: 1.5;
+    background: rgba(0,0,0,0.3); border-radius: 10px; margin-top: 12px;
 }
 .status.error { color: #ef4444; }
 .status.loading { color: #f59e0b; }
+.download-btn {
+    background: rgba(34,197,94,0.2); border: 1px solid rgba(34,197,94,0.5);
+    color: #22c55e; padding: 14px; margin-top: 8px; font-weight: 800; font-size: 14px;
+}
+.download-btn:hover { background: rgba(34,197,94,0.3); }
+.options {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 12px 0;
+}
+.option {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px; background: rgba(0,0,0,0.3); border-radius: 8px;
+    font-size: 13px; cursor: pointer;
+    border: 1px solid rgba(168,85,247,0.2); transition: 0.2s;
+}
+.option:hover { border-color: rgba(168,85,247,0.5); }
+.option input { accent-color: #a855f7; }
 .hint {
     background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.4);
     border-radius: 10px; padding: 12px; font-size: 12px; color: #60a5fa;
     line-height: 1.6; margin-bottom: 14px;
 }
-.code-output {
-    background: rgba(0,0,0,0.7); border: 1px solid rgba(34,197,94,0.4);
-    border-radius: 10px; padding: 14px;
-    font-family: 'Courier New', monospace; font-size: 11px;
-    color: #22c55e; line-height: 1.6;
-    max-height: 400px; overflow-y: auto;
-    white-space: pre-wrap; word-break: break-all;
+.progress-bar {
+    width: 100%; height: 6px; background: rgba(0,0,0,0.5);
+    border-radius: 3px; overflow: hidden; margin: 8px 0; display: none;
+}
+.progress-fill {
+    height: 100%; background: linear-gradient(90deg, #a855f7, #ec4899);
+    width: 0%; transition: width 0.3s;
 }
 </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>🔐 MÃ HOÁ DATA - MDUY V4</h1>
-    <div class="subtitle">Mã hoá API key, prompt, password — Code vẫn chạy 100%</div>
+    <h1>🔐 OBFUSCATE TOOL</h1>
+    <div class="subtitle">Upload file → Tự động làm rối → Tải về</div>
 
     <div class="hint">
-        💡 <b>Cách dùng:</b> Điền các thông tin cần mã hoá → Nhấn "MÃ HOÁ" → Copy đoạn code kết quả → Dán vào tool V9.0 thay thế các biến gốc.
+        💡 <b>Cách dùng:</b> Kéo file code vào ô → Chọn mức độ → Nhấn "BẮT ĐẦU" → Đợi 5-30s → Tải file về. <br>
+        ⚠️ Code sau khi obfuscate <b>VẪN CHẠY 100%</b>, chỉ khó đọc.
     </div>
 
-    <!-- GROQ API KEY -->
     <div class="card">
-        <div class="label">🔑 GROQ API KEY</div>
-        <div class="field">
-            <input type="password" id="groq-key" placeholder="gsk_..." value="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">
-        </div>
+        <div class="label">📁 CHỌN FILE CODE</div>
+        <label class="file-input-wrapper" id="file-wrapper">
+            <input type="file" id="file-input" accept=".txt,.js,.user.js,text/plain,application/javascript">
+            <div class="file-icon">📄</div>
+            <div class="file-text">Nhấn hoặc kéo file vào đây</div>
+            <div class="file-sub">Hỗ trợ: .txt, .js, .user.js</div>
+            <div class="file-name" id="file-name" style="display:none;"></div>
+        </label>
     </div>
 
-    <!-- VIP PASSWORD -->
     <div class="card">
-        <div class="label">👑 MẬT KHẨU VIP</div>
-        <div class="field">
-            <input type="text" id="vip-pass" placeholder="mduyking" value="mduyking">
+        <div class="label">⚙️ MỨC ĐỘ OBFUSCATE</div>
+        <div class="options">
+            <label class="option">
+                <input type="radio" name="level" value="low" checked>
+                <span>🟢 Nhẹ (nhanh, code ngắn)</span>
+            </label>
+            <label class="option">
+                <input type="radio" name="level" value="medium">
+                <span>🟡 Vừa (khuyên dùng)</span>
+            </label>
+            <label class="option">
+                <input type="radio" name="level" value="high">
+                <span>🔴 Mạnh (khó đọc nhất)</span>
+            </label>
+            <label class="option">
+                <input type="radio" name="level" value="extreme">
+                <span>💀 Cực mạnh (lâu hơn)</span>
+            </label>
         </div>
     </div>
 
-    <!-- PROMPT -->
-    <div class="card">
-        <div class="label">💬 PROMPT AI</div>
-        <div class="field">
-            <div class="field-label">VN_PROMPT</div>
-            <textarea id="vn-prompt">Ban la tro ly AI thong minh. QUY TAC BAT BUOC: 1. LUON tra loi TIENG VIET. 2. KHONG dung LaTeX. Dung ky hieu: × ÷ + - = ≈. 3. Tra loi NGAN GON. 4. Phep tinh: ket qua cuoi + toi da 2 buoc. 5. Kien thuc: 3-5 cau. Cau hoi: </textarea>
-        </div>
+    <button id="obfuscate-btn">🚀 BẮT ĐẦU OBFUSCATE</button>
+
+    <div class="progress-bar" id="progress-bar">
+        <div class="progress-fill" id="progress-fill"></div>
     </div>
 
-    <!-- CONTACT INFO -->
-    <div class="card">
-        <div class="label">📞 THÔNG TIN LIÊN HỆ MDUY</div>
-        <div class="field">
-            <div class="field-label">MDUY_ANSWER</div>
-            <input type="text" id="mduy-answer" value="MDUY là Minh Duy - người tạo ra bot này. Liên hệ: Zalo 0328033706 hoặc Telegram @mduyk">
-        </div>
-        <div class="field">
-            <div class="field-label">CREATOR_ANSWER</div>
-            <input type="text" id="creator-answer" value="Người tạo ra bot này là MDUY (Minh Duy). Liên hệ: Zalo 0328033706 hoặc Telegram @mduyk">
-        </div>
-        <div class="field">
-            <div class="field-label">CONTACT_ANSWER</div>
-            <input type="text" id="contact-answer" value="Liên hệ MDUY:&#10;• Zalo: 0328033706&#10;• Telegram: @mduyk">
-        </div>
-    </div>
+    <div class="status" id="status">Sẵn sàng — Chọn file để bắt đầu</div>
 
-    <button id="encrypt-btn">🔐 MÃ HOÁ TẤT CẢ</button>
-
-    <div class="status" id="status">Sẵn sàng</div>
-
-    <div class="card" id="output-card" style="display:none;">
-        <div class="label">✅ CODE ĐÃ MÃ HOÁ - DÁN VÀO ĐẦU TOOL</div>
-        <div class="code-output" id="output"></div>
-        <button class="copy-btn" id="copy-btn">📋 COPY CODE</button>
-    </div>
+    <button class="download-btn" id="download-btn" style="display:none;">💾 TẢI FILE ĐÃ OBFUSCATE</button>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/javascript-obfuscator@4.1.0/dist/index.browser.js"></script>
 <script>
 (function() {
     'use strict';
 
     var $ = function(id) { return document.getElementById(id); };
+    var currentFile = null;
+    var obfuscatedCode = null;
 
     function setStatus(text, type) {
         var el = $('status');
@@ -154,102 +159,228 @@ button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
         el.className = 'status' + (type ? ' ' + type : '');
     }
 
-    // ===== MÃ HOÁ CHUỖI =====
-    function encryptString(str) {
-        if (!str) return '';
-        // Base64 encode với hỗ trợ Unicode
-        var encoded = btoa(unescape(encodeURIComponent(str)));
-        // Chia thành chunks 40 ký tự để nhìn rối mắt
-        var chunks = [];
-        for (var i = 0; i < encoded.length; i += 40) {
-            chunks.push(encoded.substr(i, 40));
+    function setProgress(percent) {
+        var bar = $('progress-bar');
+        var fill = $('progress-fill');
+        if (percent > 0 && percent < 100) {
+            bar.style.display = 'block';
+            fill.style.width = percent + '%';
+        } else if (percent >= 100) {
+            setTimeout(function() { bar.style.display = 'none'; }, 500);
+        } else {
+            bar.style.display = 'none';
         }
-        // Reverse order để khó đọc
-        return chunks.reverse().join('');
     }
 
-    // ===== MÃ HOÁ =====
-    $('encrypt-btn').onclick = function() {
-        var btn = $('encrypt-btn');
+    // ===== CHỌN FILE =====
+    $('file-input').addEventListener('change', function(e) {
+        var file = e.target.files[0];
+        if (!file) return;
+        currentFile = file;
+        obfuscatedCode = null;
+        $('download-btn').style.display = 'none';
+
+        var reader = new FileReader();
+        reader.onload = function(ev) {
+            window._sourceCode = ev.target.result;
+            $('file-name').textContent = '✅ ' + file.name + ' (' + (file.size / 1024).toFixed(1) + 'KB)';
+            $('file-name').style.display = 'block';
+            $('file-wrapper').classList.add('has-file');
+            setStatus('✅ Đã đọc file: ' + file.name + '. Nhấn BẮT ĐẦU để obfuscate.', 'success');
+        };
+        reader.readAsText(file);
+    });
+
+    // ===== KÉO THẢ FILE =====
+    var wrapper = $('file-wrapper');
+    wrapper.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        wrapper.style.borderColor = '#a855f7';
+        wrapper.style.background = 'rgba(168,85,247,0.1)';
+    });
+    wrapper.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        wrapper.style.borderColor = '';
+        wrapper.style.background = '';
+    });
+    wrapper.addEventListener('drop', function(e) {
+        e.preventDefault();
+        wrapper.style.borderColor = '';
+        wrapper.style.background = '';
+        var file = e.dataTransfer.files[0];
+        if (file) {
+            currentFile = file;
+            obfuscatedCode = null;
+            $('download-btn').style.display = 'none';
+            var reader = new FileReader();
+            reader.onload = function(ev) {
+                window._sourceCode = ev.target.result;
+                $('file-name').textContent = '✅ ' + file.name + ' (' + (file.size / 1024).toFixed(1) + 'KB)';
+                $('file-name').style.display = 'block';
+                wrapper.classList.add('has-file');
+                setStatus('✅ Đã đọc file: ' + file.name, 'success');
+            };
+            reader.readAsText(file);
+        }
+    });
+
+    // ===== LẤY CONFIG THEO MỨC =====
+    function getConfig(level) {
+        var base = {
+            compact: true,
+            identifierNamesGenerator: 'hexadecimal',
+            renameGlobals: false,
+            stringArray: true,
+            stringArrayThreshold: 0.75,
+            stringArrayEncoding: ['base64'],
+            rotateStringArray: true,
+            shuffleStringArray: true,
+            splitStrings: true,
+            splitStringsChunkLength: 10,
+            numbersToExpressions: false,
+            simplify: false,
+            transformObjectKeys: false,
+            unicodeEscapeSequence: false,
+            disableConsoleOutput: false
+        };
+
+        if (level === 'low') {
+            return base;
+        }
+
+        if (level === 'medium') {
+            base.controlFlowFlattening = true;
+            base.controlFlowFlatteningThreshold = 0.5;
+            base.deadCodeInjection = true;
+            base.deadCodeInjectionThreshold = 0.3;
+            base.selfDefending = false;
+            base.debugProtection = false;
+            base.numbersToExpressions = true;
+            base.simplify = true;
+            return base;
+        }
+
+        if (level === 'high') {
+            base.controlFlowFlattening = true;
+            base.controlFlowFlatteningThreshold = 1;
+            base.deadCodeInjection = true;
+            base.deadCodeInjectionThreshold = 0.5;
+            base.selfDefending = true;
+            base.debugProtection = true;
+            base.debugProtectionInterval = 2000;
+            base.numbersToExpressions = true;
+            base.simplify = true;
+            base.transformObjectKeys = true;
+            base.splitStringsChunkLength = 5;
+            base.stringArrayEncoding = ['rc4'];
+            return base;
+        }
+
+        if (level === 'extreme') {
+            base.controlFlowFlattening = true;
+            base.controlFlowFlatteningThreshold = 1;
+            base.deadCodeInjection = true;
+            base.deadCodeInjectionThreshold = 1;
+            base.selfDefending = true;
+            base.debugProtection = true;
+            base.debugProtectionInterval = 1000;
+            base.forceTransformStrings = [];
+            base.numbersToExpressions = true;
+            base.simplify = true;
+            base.transformObjectKeys = true;
+            base.splitStringsChunkLength = 3;
+            base.stringArrayEncoding = ['rc4'];
+            base.stringArrayWrappersCount = 3;
+            base.stringArrayWrappersChainedCalls = true;
+            base.identifierNamesGenerator = 'mangled-shuffled';
+            base.identifiersPrefix = '_0x';
+            return base;
+        }
+
+        return base;
+    }
+
+    // ===== OBFUSCATE =====
+    $('obfuscate-btn').onclick = function() {
+        var btn = $('obfuscate-btn');
+        var sourceCode = window._sourceCode;
+
+        if (!sourceCode) {
+            setStatus('❌ Chưa có file! Chọn file trước.', 'error');
+            return;
+        }
+
+        if (typeof JavaScriptObfuscator === 'undefined') {
+            setStatus('❌ Không tải được thư viện obfuscate. Kiểm tra mạng!', 'error');
+            return;
+        }
+
         btn.disabled = true;
-        setStatus('⏳ Đang mã hoá...', 'loading');
+        setStatus('⏳ Đang xử lý... (có thể mất 10-60s tùy mức)', 'loading');
+        setProgress(10);
 
-        try {
-            var groqKey = $('groq-key').value.trim();
-            var vipPass = $('vip-pass').value.trim();
-            var vnPrompt = $('vn-prompt').value.trim();
-            var mduyAns = $('mduy-answer').value.trim();
-            var creatorAns = $('creator-answer').value.trim();
-            var contactAns = $('contact-answer').value.trim();
-
-            var encGroq = encryptString(groqKey);
-            var encVip = encryptString(vipPass);
-            var encPrompt = encryptString(vnPrompt);
-            var encMduy = encryptString(mduyAns);
-            var encCreator = encryptString(creatorAns);
-            var encContact = encryptString(contactAns);
-
-            var output = [
-'// ============================================',
-'// 🔐 ENCRYPTED DATA - DÁN VÀO ĐẦU TOOL',
-'// ============================================',
-'(function() {',
-'    "use strict";',
-'    ',
-'    // Hàm giải mã (không xoá)',
-'    window._dec = function(s) {',
-'        if (!s) return "";',
-'        try {',
-'            var r = s.match(/.{1,40}/g).reverse().join("");',
-'            return decodeURIComponent(escape(atob(r)));',
-'        } catch(e) { return ""; }',
-'    };',
-'    ',
-'    // Giải mã các giá trị',
-'    window._GROQ_KEY = _dec("' + encGroq + '");',
-'    window._VIP_PASS = _dec("' + encVip + '");',
-'    window._VN_PROMPT = _dec("' + encPrompt + '");',
-'    window._MDUY_ANSWER = _dec("' + encMduy + '");',
-'    window._CREATOR_ANSWER = _dec("' + encCreator + '");',
-'    window._CONTACT_ANSWER = _dec("' + encContact + '");',
-'    ',
-'})();'
-            ].join('\n');
-
-            $('output').textContent = output;
-            $('output-card').style.display = 'block';
-
-            setStatus('✅ Mã hoá xong! Copy code bên dưới.', 'success');
-            btn.disabled = false;
-
-        } catch(err) {
-            console.error(err);
-            setStatus('❌ Lỗi: ' + err.message, 'error');
-            btn.disabled = false;
+        // Tách header và body
+        var header = '';
+        var body = sourceCode;
+        var match = sourceCode.match(/\/\/ ==UserScript==[\s\S]*?\/\/ ==\/UserScript==/);
+        if (match) {
+            header = match[0] + '\n\n';
+            body = sourceCode.replace(match[0], '').trim();
         }
+
+        var level = document.querySelector('input[name="level"]:checked').value;
+
+        setTimeout(function() {
+            try {
+                setProgress(30);
+                var config = getConfig(level);
+
+                // Chạy obfuscate
+                var obfuscated = JavaScriptObfuscator.obfuscate(body, config).getObfuscatedCode();
+
+                setProgress(90);
+                obfuscatedCode = header + obfuscated;
+
+                var originalKB = (new Blob([sourceCode]).size / 1024).toFixed(1);
+                var obfKB = (new Blob([obfuscatedCode]).size / 1024).toFixed(1);
+                var ratio = Math.round(obfuscatedCode.length / sourceCode.length * 100);
+
+                setStatus('✅ Xong! ' + originalKB + 'KB → ' + obfKB + 'KB (' + ratio + '%)', 'success');
+                setProgress(100);
+
+                $('download-btn').style.display = 'block';
+                $('download-btn').textContent = '💾 TẢI FILE ĐÃ OBFUSCATE (' + obfKB + 'KB)';
+                btn.disabled = false;
+
+            } catch(err) {
+                console.error(err);
+                setStatus('❌ Lỗi: ' + err.message, 'error');
+                setProgress(0);
+                btn.disabled = false;
+            }
+        }, 100);
     };
 
-    // ===== COPY =====
-    $('copy-btn').onclick = function() {
-        var text = $('output').textContent;
-        try {
-            navigator.clipboard.writeText(text).then(function() {
-                $('copy-btn').textContent = '✅ ĐÃ COPY!';
-                setTimeout(function() { $('copy-btn').textContent = '📋 COPY CODE'; }, 1500);
-            });
-        } catch(e) {
-            var ta = document.createElement('textarea');
-            ta.value = text;
-            document.body.appendChild(ta);
-            ta.select();
-            document.execCommand('copy');
-            document.body.removeChild(ta);
-            $('copy-btn').textContent = '✅ ĐÃ COPY!';
-            setTimeout(function() { $('copy-btn').textContent = '📋 COPY CODE'; }, 1500);
-        }
+    // ===== TẢI FILE =====
+    $('download-btn').onclick = function() {
+        if (!obfuscatedCode) return;
+        var blob = new Blob([obfuscatedCode], { type: 'text/javascript' });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        var fileName = currentFile ? currentFile.name.replace(/\.(txt|js)$/, '') : 'tool';
+        a.href = url;
+        a.download = fileName + '-obfuscated.user.js';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        $('download-btn').textContent = '✅ ĐÃ TẢI!';
+        setTimeout(function() {
+            $('download-btn').textContent = '💾 TẢI FILE ĐÃ OBFUSCATE';
+        }, 2000);
     };
 
-    setStatus('Sẵn sàng — Điền thông tin rồi nhấn MÃ HOÁ');
+    setStatus('Sẵn sàng — Chọn file để bắt đầu');
 })();
 </script>
 
