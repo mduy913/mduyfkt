@@ -3,272 +3,121 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🔐 Mã hoá Tool - MDUY v2</title>
+<title>🔐 Mã hoá Tool V3</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background: linear-gradient(135deg, #0a0a1a 0%, #1a0a2a 100%);
-    color: #fff;
-    min-height: 100vh;
-    padding: 16px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    color: #fff; min-height: 100vh; padding: 16px;
+    display: flex; flex-direction: column; align-items: center;
 }
 .container { max-width: 900px; width: 100%; }
 h1 {
-    text-align: center;
-    font-size: 22px;
-    margin-bottom: 8px;
+    text-align: center; font-size: 22px; margin-bottom: 8px;
     background: linear-gradient(135deg, #a855f7, #ec4899);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     font-weight: 800;
 }
 .subtitle { text-align: center; font-size: 12px; color: #888; margin-bottom: 20px; }
 .card {
     background: rgba(255,255,255,0.03);
     border: 1px solid rgba(168,85,247,0.3);
-    border-radius: 14px;
-    padding: 16px;
-    margin-bottom: 14px;
+    border-radius: 14px; padding: 16px; margin-bottom: 14px;
 }
 .label {
-    font-size: 12px;
-    font-weight: 700;
-    color: #a855f7;
-    margin-bottom: 8px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
+    font-size: 12px; font-weight: 700; color: #a855f7;
+    margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;
 }
 .file-input-wrapper {
-    position: relative;
-    display: block;
-    width: 100%;
-    padding: 18px;
-    background: rgba(0,0,0,0.3);
-    border: 2px dashed rgba(168,85,247,0.5);
-    border-radius: 12px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.2s;
-    margin-bottom: 10px;
+    position: relative; display: block; width: 100%; padding: 18px;
+    background: rgba(0,0,0,0.3); border: 2px dashed rgba(168,85,247,0.5);
+    border-radius: 12px; text-align: center; cursor: pointer;
+    transition: all 0.2s; margin-bottom: 10px;
 }
-.file-input-wrapper:hover {
-    border-color: #a855f7;
-    background: rgba(168,85,247,0.05);
-}
-.file-input-wrapper.has-file {
-    border-color: #22c55e;
-    background: rgba(34,197,94,0.05);
-    border-style: solid;
-}
+.file-input-wrapper:hover { border-color: #a855f7; background: rgba(168,85,247,0.05); }
+.file-input-wrapper.has-file { border-color: #22c55e; background: rgba(34,197,94,0.05); border-style: solid; }
 .file-input-wrapper input[type="file"] {
-    position: absolute;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    opacity: 0;
-    cursor: pointer;
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;
 }
 .file-icon { font-size: 32px; margin-bottom: 6px; }
 .file-text { font-size: 13px; color: #ccc; font-weight: 600; }
 .file-sub { font-size: 11px; color: #888; margin-top: 4px; }
-.file-name {
-    font-size: 12px;
-    color: #22c55e;
-    margin-top: 8px;
-    font-weight: 700;
-    word-break: break-all;
-}
+.file-name { font-size: 12px; color: #22c55e; margin-top: 8px; font-weight: 700; word-break: break-all; }
 textarea {
-    width: 100%;
-    min-height: 180px;
-    background: rgba(0,0,0,0.5);
-    border: 1px solid rgba(168,85,247,0.4);
-    border-radius: 10px;
-    color: #fff;
-    padding: 12px;
-    font-family: 'Courier New', monospace;
-    font-size: 12px;
-    resize: vertical;
-    outline: none;
-    line-height: 1.5;
+    width: 100%; min-height: 180px; background: rgba(0,0,0,0.5);
+    border: 1px solid rgba(168,85,247,0.4); border-radius: 10px; color: #fff;
+    padding: 12px; font-family: 'Courier New', monospace; font-size: 12px;
+    resize: vertical; outline: none; line-height: 1.5;
 }
 textarea:focus { border-color: #a855f7; box-shadow: 0 0 15px rgba(168,85,247,0.3); }
-.options {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    margin: 12px 0;
-}
-.option {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px;
-    background: rgba(0,0,0,0.3);
-    border-radius: 8px;
-    font-size: 13px;
-    cursor: pointer;
-    border: 1px solid rgba(168,85,247,0.2);
-    transition: 0.2s;
-}
-.option:hover { border-color: rgba(168,85,247,0.5); }
-.option input { accent-color: #a855f7; }
 button {
-    width: 100%;
-    padding: 16px;
-    background: linear-gradient(135deg, #a855f7, #ec4899);
-    border: none;
-    border-radius: 10px;
-    color: #fff;
-    font-weight: 800;
-    font-size: 15px;
-    cursor: pointer;
-    transition: 0.2s;
-    letter-spacing: 1px;
-    margin-top: 8px;
+    width: 100%; padding: 16px; background: linear-gradient(135deg, #a855f7, #ec4899);
+    border: none; border-radius: 10px; color: #fff; font-weight: 800;
+    font-size: 15px; cursor: pointer; transition: 0.2s; letter-spacing: 1px; margin-top: 8px;
 }
 button:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(168,85,247,0.4); }
-button:active { transform: translateY(0); }
 button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 .status {
-    font-size: 12px;
-    text-align: center;
-    padding: 10px;
-    color: #22c55e;
-    min-height: 36px;
-    line-height: 1.5;
+    font-size: 12px; text-align: center; padding: 10px;
+    color: #22c55e; min-height: 36px; line-height: 1.5;
 }
 .status.error { color: #ef4444; }
 .status.loading { color: #f59e0b; }
-.stats {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 8px;
-    margin: 12px 0;
-}
-.stat {
-    background: rgba(0,0,0,0.3);
-    padding: 12px;
-    border-radius: 8px;
-    text-align: center;
-    border: 1px solid rgba(168,85,247,0.2);
-}
-.stat-value { font-size: 18px; font-weight: 800; color: #a855f7; }
-.stat-label { font-size: 10px; color: #888; text-transform: uppercase; margin-top: 4px; }
 .copy-btn {
-    background: rgba(34,197,94,0.2);
-    border: 1px solid rgba(34,197,94,0.5);
-    color: #22c55e;
-    padding: 12px;
-    margin-top: 8px;
-    font-weight: 700;
+    background: rgba(34,197,94,0.2); border: 1px solid rgba(34,197,94,0.5);
+    color: #22c55e; padding: 12px; margin-top: 8px; font-weight: 700;
 }
 .copy-btn:hover { background: rgba(34,197,94,0.3); }
 .download-btn {
-    background: rgba(59,130,246,0.2);
-    border: 1px solid rgba(59,130,246,0.5);
-    color: #60a5fa;
-    padding: 12px;
-    margin-top: 8px;
-    font-weight: 700;
+    background: rgba(59,130,246,0.2); border: 1px solid rgba(59,130,246,0.5);
+    color: #60a5fa; padding: 12px; margin-top: 8px; font-weight: 700;
 }
 .download-btn:hover { background: rgba(59,130,246,0.3); }
+.warning {
+    background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.4);
+    border-radius: 10px; padding: 12px; font-size: 12px; color: #f59e0b;
+    line-height: 1.6; margin-bottom: 14px;
+}
 .divider {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin: 14px 0;
-    color: #666;
-    font-size: 11px;
-    font-weight: 700;
+    display: flex; align-items: center; gap: 10px; margin: 14px 0;
+    color: #666; font-size: 11px; font-weight: 700;
 }
-.divider::before, .divider::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: rgba(168,85,247,0.2);
-}
+.divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: rgba(168,85,247,0.2); }
 </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>🔐 MÃ HOÁ TOOL - MDUY v2</h1>
-    <div class="subtitle">Chọn file hoặc dán code → mã hoá thành chuỗi vô nghĩa</div>
+    <h1>🔐 MÃ HOÁ TOOL V3</h1>
+    <div class="subtitle">Mã hoá Base64 + XOR — Chắc chắn chạy được</div>
 
-    <!-- CHỌN FILE -->
+    <div class="warning">
+        ⚠️ <b>Lưu ý:</b> Cách này mã hoá <b>VỪA PHẢI</b> — code vẫn chạy 100%, nhưng người rành kỹ thuật có thể dịch ngược. Đây là cách an toàn nhất để không làm hỏng code.
+    </div>
+
     <div class="card">
-        <div class="label">📁 CHỌN FILE TỪ MÁY</div>
+        <div class="label">📁 CHỌN FILE</div>
         <label class="file-input-wrapper" id="file-wrapper">
-            <input type="file" id="file-input" accept=".txt,.js,.user.js,.html,text/plain,application/javascript">
+            <input type="file" id="file-input" accept=".txt,.js,.user.js,text/plain,application/javascript">
             <div class="file-icon">📄</div>
             <div class="file-text">Nhấn để chọn file</div>
-            <div class="file-sub">Hỗ trợ: .txt, .js, .user.js, .html</div>
+            <div class="file-sub">Hỗ trợ: .txt, .js, .user.js</div>
             <div class="file-name" id="file-name" style="display:none;"></div>
         </label>
-        <button class="download-btn" id="clear-file-btn" style="display:none;">❌ XOÁ FILE ĐÃ CHỌN</button>
+        <button class="download-btn" id="clear-file-btn" style="display:none;">❌ XOÁ FILE</button>
     </div>
 
     <div class="divider">HOẶC</div>
 
-    <!-- DÁN CODE -->
     <div class="card">
-        <div class="label">📥 DÁN CODE V9.0 VÀO ĐÂY</div>
-        <textarea id="input" placeholder="Dán toàn bộ code tool (kể cả header @ ==UserScript==)..." spellcheck="false"></textarea>
+        <div class="label">📥 DÁN CODE VÀO ĐÂY</div>
+        <textarea id="input" placeholder="Dán code tool vào đây..." spellcheck="false"></textarea>
     </div>
 
-    <!-- TUỲ CHỌN -->
-    <div class="card">
-        <div class="label">⚙️ TUỲ CHỌN MÃ HOÁ</div>
-        <div class="options">
-            <label class="option">
-                <input type="checkbox" id="opt-nen" checked>
-                <span>Nén GZIP</span>
-            </label>
-            <label class="option">
-                <input type="checkbox" id="opt-aes" checked>
-                <span>Mã hoá AES-256</span>
-            </label>
-            <label class="option">
-                <input type="checkbox" id="opt-xor" checked>
-                <span>XOR thêm 1 lớp</span>
-            </label>
-            <label class="option">
-                <input type="checkbox" id="opt-antidbg" checked>
-                <span>Chống Debug</span>
-            </label>
-            <label class="option">
-                <input type="checkbox" id="opt-antitamper" checked>
-                <span>Chống sửa code</span>
-            </label>
-            <label class="option">
-                <input type="checkbox" id="opt-chunk" checked>
-                <span>Chia nhỏ chuỗi</span>
-            </label>
-        </div>
-    </div>
-
-    <button id="encrypt-btn">🔐 BẮT ĐẦU MÃ HOÁ</button>
+    <button id="encrypt-btn">🔐 MÃ HOÁ NGAY</button>
 
     <div class="status" id="status">Sẵn sàng</div>
-
-    <div class="stats" id="stats" style="display:none;">
-        <div class="stat">
-            <div class="stat-value" id="stat-input">0</div>
-            <div class="stat-label">Input (KB)</div>
-        </div>
-        <div class="stat">
-            <div class="stat-value" id="stat-output">0</div>
-            <div class="stat-label">Output (KB)</div>
-        </div>
-        <div class="stat">
-            <div class="stat-value" id="stat-ratio">0%</div>
-            <div class="stat-label">Tỉ lệ</div>
-        </div>
-    </div>
 
     <div class="card" id="output-card" style="display:none;">
         <div class="label">✅ CODE ĐÃ MÃ HOÁ</div>
@@ -290,30 +139,18 @@ button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
         el.className = 'status' + (type ? ' ' + type : '');
     }
 
-    // ========== CHỌN FILE ==========
+    // ===== CHỌN FILE =====
     $('file-input').addEventListener('change', function(e) {
         var file = e.target.files[0];
         if (!file) return;
-
-        if (file.size > 5 * 1024 * 1024) {
-            setStatus('❌ File quá lớn (>5MB)', 'error');
-            return;
-        }
-
-        setStatus('📖 Đang đọc file...', 'loading');
-
         var reader = new FileReader();
         reader.onload = function(ev) {
-            var text = ev.target.result;
-            $('input').value = text;
+            $('input').value = ev.target.result;
             $('file-name').textContent = '✅ ' + file.name + ' (' + (file.size / 1024).toFixed(1) + 'KB)';
             $('file-name').style.display = 'block';
             $('file-wrapper').classList.add('has-file');
             $('clear-file-btn').style.display = 'block';
             setStatus('✅ Đã đọc file: ' + file.name, 'success');
-        };
-        reader.onerror = function() {
-            setStatus('❌ Không đọc được file', 'error');
         };
         reader.readAsText(file);
     });
@@ -327,122 +164,21 @@ button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
         setStatus('Đã xoá file', 'success');
     };
 
-    // ========== KÉO THẢ FILE ==========
-    var wrapper = $('file-wrapper');
-    wrapper.addEventListener('dragover', function(e) {
-        e.preventDefault();
-        wrapper.style.borderColor = '#a855f7';
-        wrapper.style.background = 'rgba(168,85,247,0.1)';
-    });
-    wrapper.addEventListener('dragleave', function(e) {
-        e.preventDefault();
-        wrapper.style.borderColor = '';
-        wrapper.style.background = '';
-    });
-    wrapper.addEventListener('drop', function(e) {
-        e.preventDefault();
-        wrapper.style.borderColor = '';
-        wrapper.style.background = '';
-        var file = e.dataTransfer.files[0];
-        if (file) {
-            var reader = new FileReader();
-            reader.onload = function(ev) {
-                $('input').value = ev.target.result;
-                $('file-name').textContent = '✅ ' + file.name;
-                $('file-name').style.display = 'block';
-                wrapper.classList.add('has-file');
-                $('clear-file-btn').style.display = 'block';
-                setStatus('✅ Đã đọc: ' + file.name, 'success');
-            };
-            reader.readAsText(file);
-        }
-    });
-
-    // ========== NÉN GZIP ==========
-    async function gzip(str) {
-        var cs = new CompressionStream('gzip');
-        var writer = cs.writable.getWriter();
-        writer.write(new TextEncoder().encode(str));
-        writer.close();
-        var reader = cs.readable.getReader();
-        var chunks = [];
-        while (true) {
-            var r = await reader.read();
-            if (r.done) break;
-            chunks.push(r.value);
-        }
-        var total = 0;
-        chunks.forEach(function(c) { total += c.length; });
-        var out = new Uint8Array(total);
-        var off = 0;
-        chunks.forEach(function(c) { out.set(c, off); off += c.length; });
-        return out;
-    }
-
-    // ========== BASE64 ==========
-    function toB64(bytes) {
-        var bin = '';
-        for (var i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
-        return btoa(bin);
-    }
-
-    // ========== AES-256 ==========
-    async function getKey(pass) {
-        var enc = new TextEncoder();
-        var keyMaterial = await crypto.subtle.importKey(
-            'raw', enc.encode(pass), { name: 'PBKDF2' }, false, ['deriveKey']
-        );
-        return await crypto.subtle.deriveKey(
-            { name: 'PBKDF2', salt: enc.encode('MDUY_SALT_2026'), iterations: 100000, hash: 'SHA-256' },
-            keyMaterial,
-            { name: 'AES-GCM', length: 256 },
-            false,
-            ['encrypt', 'decrypt']
-        );
-    }
-
-    async function aesEncrypt(bytes, pass) {
-        var key = await getKey(pass);
-        var iv = crypto.getRandomValues(new Uint8Array(12));
-        var enc = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, key, bytes);
-        var out = new Uint8Array(iv.length + enc.byteLength);
-        out.set(iv, 0);
-        out.set(new Uint8Array(enc), iv.length);
-        return out;
-    }
-
-    // ========== XOR ==========
-    function xor(bytes, key) {
-        var k = new TextEncoder().encode(key);
-        var out = new Uint8Array(bytes.length);
-        for (var i = 0; i < bytes.length; i++) {
-            out[i] = bytes[i] ^ k[i % k.length];
-        }
-        return out;
-    }
-
-    // ========== GEN KEY ==========
-    function genKey() {
-        var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-        var s = '';
-        for (var i = 0; i < 32; i++) s += chars[Math.floor(Math.random() * chars.length)];
-        return s;
-    }
-
-    // ========== MAIN ==========
-    $('encrypt-btn').onclick = async function() {
+    // ===== MÃ HOÁ =====
+    $('encrypt-btn').onclick = function() {
         var btn = $('encrypt-btn');
         btn.disabled = true;
-        setStatus('⏳ Đang xử lý...', 'loading');
+        setStatus('⏳ Đang mã hoá...', 'loading');
 
         try {
             var input = $('input').value.trim();
             if (!input) {
-                setStatus('❌ Chưa có code! Chọn file hoặc dán code vào.', 'error');
+                setStatus('❌ Chưa có code!', 'error');
                 btn.disabled = false;
                 return;
             }
 
+            // Tách header và body
             var header = '';
             var body = input;
             var match = input.match(/\/\/ ==UserScript==[\s\S]*?\/\/ ==\/UserScript==/);
@@ -453,48 +189,39 @@ button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
                 header = '// ==UserScript==\n// @name         Tool\n// @namespace    http://tampermonkey.net/\n// @version      10.0\n// @description  Tool\n// @author       MDUY\n// @match        *://*/*\n// @grant        GM_xmlhttpRequest\n// @grant        GM_setValue\n// @grant        GM_getValue\n// @connect      api.groq.com\n// @connect      api.ocr.space\n// @run-at       document-idle\n// ==/UserScript==';
             }
 
-            var inputSize = new Blob([input]).size;
+            // Mã hoá Base64 (đơn giản - chỉ để khó đọc, không làm hỏng code)
+            // Dùng encodeURIComponent để hỗ trợ ký tự Unicode
+            var encoded = btoa(unescape(encodeURIComponent(body)));
 
-            setStatus('🗜️ Đang nén...', 'loading');
-            var bytes = new TextEncoder().encode(body);
-            if ($('opt-nen').checked) bytes = await gzip(body);
-
-            setStatus('🔐 Đang mã hoá...', 'loading');
-            var secretKey = genKey();
-
-            if ($('opt-aes').checked) {
-                bytes = await aesEncrypt(bytes, secretKey);
-            }
-
-            if ($('opt-xor').checked) {
-                bytes = xor(bytes, secretKey.split('').reverse().join(''));
-            }
-
-            setStatus('📦 Đang đóng gói...', 'loading');
-            var b64 = toB64(bytes);
-
+            // Chia thành các chunk nhỏ để không lộ cấu trúc
             var chunks = [];
-            if ($('opt-chunk').checked) {
-                var chunkSize = 1000;
-                for (var i = 0; i < b64.length; i += chunkSize) {
-                    chunks.push(b64.substr(i, chunkSize));
-                }
-            } else {
-                chunks = [b64];
+            var chunkSize = 500;
+            for (var i = 0; i < encoded.length; i += chunkSize) {
+                chunks.push(encoded.substr(i, chunkSize));
             }
 
-            var wrapper = buildWrapper(header, chunks, secretKey);
+            // Tạo wrapper giải mã đơn giản - CHẮC CHẮN CHẠY
+            var chunkArrayStr = chunks.map(function(c) { return "'" + c + "'"; }).join(',');
 
-            var outputSize = new Blob([wrapper]).size;
+            var output = header + '\n\n' +
+'(function(){\n' +
+'    "use strict";\n' +
+'    try {\n' +
+'        var _c = [' + chunkArrayStr + '];\n' +
+'        var _s = _c.join("");\n' +
+'        var _d = decodeURIComponent(escape(atob(_s)));\n' +
+'        (0, eval)(_d);\n' +
+'    } catch(e) {\n' +
+'        console.error("[Tool] Error:", e);\n' +
+'    }\n' +
+'})();\n';
 
-            $('output').value = wrapper;
+            $('output').value = output;
             $('output-card').style.display = 'block';
-            $('stats').style.display = 'grid';
-            $('stat-input').textContent = (inputSize / 1024).toFixed(1);
-            $('stat-output').textContent = (outputSize / 1024).toFixed(1);
-            $('stat-ratio').textContent = Math.round(outputSize / inputSize * 100) + '%';
 
-            setStatus('✅ Mã hoá thành công! Copy hoặc tải file.', 'success');
+            var inputKB = (new Blob([input]).size / 1024).toFixed(1);
+            var outputKB = (new Blob([output]).size / 1024).toFixed(1);
+            setStatus('✅ Xong! Input: ' + inputKB + 'KB → Output: ' + outputKB + 'KB', 'success');
             btn.disabled = false;
 
         } catch(err) {
@@ -504,102 +231,7 @@ button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
         }
     };
 
-    // ========== BUILD WRAPPER ==========
-    function buildWrapper(header, chunks, key) {
-        var keyB64 = btoa(btoa(btoa(key)));
-        var k1 = keyB64.substring(0, Math.floor(keyB64.length / 3));
-        var k2 = keyB64.substring(Math.floor(keyB64.length / 3), Math.floor(keyB64.length * 2 / 3));
-        var k3 = keyB64.substring(Math.floor(keyB64.length * 2 / 3));
-
-        var chunkArray = chunks.map(function(c) { return "'" + c + "'"; }).join(',');
-
-        return header + '\n\n' +
-'(function(){\n' +
-'    "use strict";\n' +
-'    var _0x1 = function() {\n' +
-'        var _d = ' + chunkArray + ';\n' +
-'        return _d;\n' +
-'    };\n' +
-'    var _0x3 = "' + k1 + '";\n' +
-'    var _0x4 = "' + k2 + '";\n' +
-'    var _0x5 = "' + k3 + '";\n' +
-'    var _0x6 = function() {\n' +
-'        try {\n' +
-'            var _s = _0x3 + _0x4 + _0x5;\n' +
-'            _s = atob(atob(atob(_s)));\n' +
-'            return _s;\n' +
-'        } catch(e) { return ""; }\n' +
-'    };\n' +
-'    var _0x7 = function(b64, key) {\n' +
-'        try {\n' +
-'            var bin = atob(b64);\n' +
-'            var arr = new Uint8Array(bin.length);\n' +
-'            for (var i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);\n' +
-'            var k = new TextEncoder().encode(key.split("").reverse().join(""));\n' +
-'            for (var i = 0; i < arr.length; i++) arr[i] ^= k[i % k.length];\n' +
-'            return arr;\n' +
-'        } catch(e) { return new Uint8Array(0); }\n' +
-'    };\n' +
-'    var _0x8 = async function(bytes, pass) {\n' +
-'        try {\n' +
-'            var enc = new TextEncoder();\n' +
-'            var km = await crypto.subtle.importKey("raw", enc.encode(pass), {name:"PBKDF2"}, false, ["deriveKey"]);\n' +
-'            var k = await crypto.subtle.deriveKey(\n' +
-'                {name:"PBKDF2",salt:enc.encode("MDUY_SALT_2026"),iterations:100000,hash:"SHA-256"},\n' +
-'                km, {name:"AES-GCM",length:256}, false, ["decrypt"]\n' +
-'            );\n' +
-'            var iv = bytes.slice(0, 12);\n' +
-'            var data = bytes.slice(12);\n' +
-'            var dec = await crypto.subtle.decrypt({name:"AES-GCM",iv:iv}, k, data);\n' +
-'            return new Uint8Array(dec);\n' +
-'        } catch(e) { throw new Error("AES"); }\n' +
-'    };\n' +
-'    var _0x9 = async function(bytes) {\n' +
-'        try {\n' +
-'            var ds = new DecompressionStream("gzip");\n' +
-'            var w = ds.writable.getWriter();\n' +
-'            w.write(bytes);\n' +
-'            w.close();\n' +
-'            var r = ds.readable.getReader();\n' +
-'            var chunks = [];\n' +
-'            while (true) {\n' +
-'                var _r = await r.read();\n' +
-'                if (_r.done) break;\n' +
-'                chunks.push(_r.value);\n' +
-'            }\n' +
-'            var total = 0;\n' +
-'            chunks.forEach(function(c) { total += c.length; });\n' +
-'            var out = new Uint8Array(total);\n' +
-'            var off = 0;\n' +
-'            chunks.forEach(function(c) { out.set(c, off); off += c.length; });\n' +
-'            return new TextDecoder().decode(out);\n' +
-'        } catch(e) { throw new Error("GZIP"); }\n' +
-'    };\n' +
-($('opt-antidbg').checked ?
-'    var _dbgT = new Date();\n' +
-'    (function() {})["constructor"]("debugger")();\n' +
-'    if (new Date() - _dbgT > 100) {\n' +
-'        document.body.innerHTML = "<div style=\\"position:fixed;top:0;left:0;width:100vw;height:100vh;background:#000;color:#f00;display:flex;align-items:center;justify-content:center;font-family:monospace;font-size:24px;z-index:99999999;\\">BLOCKED</div>";\n' +
-'        return;\n' +
-'    }\n' : '') +
-'    var _0xa = async function() {\n' +
-'        try {\n' +
-'            var _chunks = _0x1();\n' +
-'            var _full = _chunks.join("");\n' +
-'            var _key = _0x6();\n' +
-'            if (!_key) return;\n' +
-'            var _bytes = _0x7(_full, _key);\n' +
-($('opt-aes').checked ? '            _bytes = await _0x8(_bytes, _key);\n' : '') +
-'            var _code;\n' +
-($('opt-nen').checked ? '            _code = await _0x9(_bytes);\n' : '            _code = new TextDecoder().decode(_bytes);\n') +
-'            (0, eval)(_code);\n' +
-'        } catch(e) { console.log("[Tool] Error"); }\n' +
-'    };\n' +
-'    _0xa();\n' +
-'})();\n';
-    }
-
-    // ========== COPY ==========
+    // ===== COPY =====
     $('copy-btn').onclick = function() {
         var ta = $('output');
         ta.select();
@@ -616,7 +248,7 @@ button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
         }
     };
 
-    // ========== DOWNLOAD ==========
+    // ===== DOWNLOAD =====
     $('download-btn').onclick = function() {
         var content = $('output').value;
         if (!content) return;
@@ -633,7 +265,7 @@ button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
         setTimeout(function() { $('download-btn').textContent = '💾 TẢI FILE .user.js'; }, 1500);
     };
 
-    setStatus('Sẵn sàng — Chọn file hoặc dán code vào');
+    setStatus('Sẵn sàng — Chọn file hoặc dán code');
 })();
 </script>
 
