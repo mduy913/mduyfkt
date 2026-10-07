@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🔐 Mã hoá Tool V3</title>
+<title>🔐 Mã hoá Data - MDUY V4</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
@@ -29,101 +29,116 @@ h1 {
     font-size: 12px; font-weight: 700; color: #a855f7;
     margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;
 }
-.file-input-wrapper {
-    position: relative; display: block; width: 100%; padding: 18px;
-    background: rgba(0,0,0,0.3); border: 2px dashed rgba(168,85,247,0.5);
-    border-radius: 12px; text-align: center; cursor: pointer;
-    transition: all 0.2s; margin-bottom: 10px;
-}
-.file-input-wrapper:hover { border-color: #a855f7; background: rgba(168,85,247,0.05); }
-.file-input-wrapper.has-file { border-color: #22c55e; background: rgba(34,197,94,0.05); border-style: solid; }
-.file-input-wrapper input[type="file"] {
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;
-}
-.file-icon { font-size: 32px; margin-bottom: 6px; }
-.file-text { font-size: 13px; color: #ccc; font-weight: 600; }
-.file-sub { font-size: 11px; color: #888; margin-top: 4px; }
-.file-name { font-size: 12px; color: #22c55e; margin-top: 8px; font-weight: 700; word-break: break-all; }
-textarea {
-    width: 100%; min-height: 180px; background: rgba(0,0,0,0.5);
+input[type="text"], input[type="password"], textarea {
+    width: 100%; background: rgba(0,0,0,0.5);
     border: 1px solid rgba(168,85,247,0.4); border-radius: 10px; color: #fff;
-    padding: 12px; font-family: 'Courier New', monospace; font-size: 12px;
-    resize: vertical; outline: none; line-height: 1.5;
+    padding: 12px; font-family: 'Courier New', monospace; font-size: 13px;
+    outline: none; line-height: 1.5;
 }
-textarea:focus { border-color: #a855f7; box-shadow: 0 0 15px rgba(168,85,247,0.3); }
+input[type="text"]:focus, input[type="password"]:focus, textarea:focus {
+    border-color: #a855f7; box-shadow: 0 0 15px rgba(168,85,247,0.3);
+}
+textarea { min-height: 80px; resize: vertical; }
+.field { margin-bottom: 12px; }
+.field-label {
+    font-size: 11px; color: #aaa; margin-bottom: 5px;
+    font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
+}
 button {
-    width: 100%; padding: 16px; background: linear-gradient(135deg, #a855f7, #ec4899);
+    width: 100%; padding: 14px;
+    background: linear-gradient(135deg, #a855f7, #ec4899);
     border: none; border-radius: 10px; color: #fff; font-weight: 800;
-    font-size: 15px; cursor: pointer; transition: 0.2s; letter-spacing: 1px; margin-top: 8px;
+    font-size: 14px; cursor: pointer; transition: 0.2s;
+    letter-spacing: 1px; margin-top: 8px;
 }
 button:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(168,85,247,0.4); }
 button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.copy-btn {
+    background: rgba(34,197,94,0.2); border: 1px solid rgba(34,197,94,0.5);
+    color: #22c55e; padding: 12px; margin-top: 8px; font-weight: 700;
+}
+.copy-btn:hover { background: rgba(34,197,94,0.3); }
 .status {
     font-size: 12px; text-align: center; padding: 10px;
     color: #22c55e; min-height: 36px; line-height: 1.5;
 }
 .status.error { color: #ef4444; }
 .status.loading { color: #f59e0b; }
-.copy-btn {
-    background: rgba(34,197,94,0.2); border: 1px solid rgba(34,197,94,0.5);
-    color: #22c55e; padding: 12px; margin-top: 8px; font-weight: 700;
-}
-.copy-btn:hover { background: rgba(34,197,94,0.3); }
-.download-btn {
-    background: rgba(59,130,246,0.2); border: 1px solid rgba(59,130,246,0.5);
-    color: #60a5fa; padding: 12px; margin-top: 8px; font-weight: 700;
-}
-.download-btn:hover { background: rgba(59,130,246,0.3); }
-.warning {
-    background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.4);
-    border-radius: 10px; padding: 12px; font-size: 12px; color: #f59e0b;
+.hint {
+    background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.4);
+    border-radius: 10px; padding: 12px; font-size: 12px; color: #60a5fa;
     line-height: 1.6; margin-bottom: 14px;
 }
-.divider {
-    display: flex; align-items: center; gap: 10px; margin: 14px 0;
-    color: #666; font-size: 11px; font-weight: 700;
+.code-output {
+    background: rgba(0,0,0,0.7); border: 1px solid rgba(34,197,94,0.4);
+    border-radius: 10px; padding: 14px;
+    font-family: 'Courier New', monospace; font-size: 11px;
+    color: #22c55e; line-height: 1.6;
+    max-height: 400px; overflow-y: auto;
+    white-space: pre-wrap; word-break: break-all;
 }
-.divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: rgba(168,85,247,0.2); }
 </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>🔐 MÃ HOÁ TOOL V3</h1>
-    <div class="subtitle">Mã hoá Base64 + XOR — Chắc chắn chạy được</div>
+    <h1>🔐 MÃ HOÁ DATA - MDUY V4</h1>
+    <div class="subtitle">Mã hoá API key, prompt, password — Code vẫn chạy 100%</div>
 
-    <div class="warning">
-        ⚠️ <b>Lưu ý:</b> Cách này mã hoá <b>VỪA PHẢI</b> — code vẫn chạy 100%, nhưng người rành kỹ thuật có thể dịch ngược. Đây là cách an toàn nhất để không làm hỏng code.
+    <div class="hint">
+        💡 <b>Cách dùng:</b> Điền các thông tin cần mã hoá → Nhấn "MÃ HOÁ" → Copy đoạn code kết quả → Dán vào tool V9.0 thay thế các biến gốc.
     </div>
 
+    <!-- GROQ API KEY -->
     <div class="card">
-        <div class="label">📁 CHỌN FILE</div>
-        <label class="file-input-wrapper" id="file-wrapper">
-            <input type="file" id="file-input" accept=".txt,.js,.user.js,text/plain,application/javascript">
-            <div class="file-icon">📄</div>
-            <div class="file-text">Nhấn để chọn file</div>
-            <div class="file-sub">Hỗ trợ: .txt, .js, .user.js</div>
-            <div class="file-name" id="file-name" style="display:none;"></div>
-        </label>
-        <button class="download-btn" id="clear-file-btn" style="display:none;">❌ XOÁ FILE</button>
+        <div class="label">🔑 GROQ API KEY</div>
+        <div class="field">
+            <input type="password" id="groq-key" placeholder="gsk_..." value="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">
+        </div>
     </div>
 
-    <div class="divider">HOẶC</div>
-
+    <!-- VIP PASSWORD -->
     <div class="card">
-        <div class="label">📥 DÁN CODE VÀO ĐÂY</div>
-        <textarea id="input" placeholder="Dán code tool vào đây..." spellcheck="false"></textarea>
+        <div class="label">👑 MẬT KHẨU VIP</div>
+        <div class="field">
+            <input type="text" id="vip-pass" placeholder="mduyking" value="mduyking">
+        </div>
     </div>
 
-    <button id="encrypt-btn">🔐 MÃ HOÁ NGAY</button>
+    <!-- PROMPT -->
+    <div class="card">
+        <div class="label">💬 PROMPT AI</div>
+        <div class="field">
+            <div class="field-label">VN_PROMPT</div>
+            <textarea id="vn-prompt">Ban la tro ly AI thong minh. QUY TAC BAT BUOC: 1. LUON tra loi TIENG VIET. 2. KHONG dung LaTeX. Dung ky hieu: × ÷ + - = ≈. 3. Tra loi NGAN GON. 4. Phep tinh: ket qua cuoi + toi da 2 buoc. 5. Kien thuc: 3-5 cau. Cau hoi: </textarea>
+        </div>
+    </div>
+
+    <!-- CONTACT INFO -->
+    <div class="card">
+        <div class="label">📞 THÔNG TIN LIÊN HỆ MDUY</div>
+        <div class="field">
+            <div class="field-label">MDUY_ANSWER</div>
+            <input type="text" id="mduy-answer" value="MDUY là Minh Duy - người tạo ra bot này. Liên hệ: Zalo 0328033706 hoặc Telegram @mduyk">
+        </div>
+        <div class="field">
+            <div class="field-label">CREATOR_ANSWER</div>
+            <input type="text" id="creator-answer" value="Người tạo ra bot này là MDUY (Minh Duy). Liên hệ: Zalo 0328033706 hoặc Telegram @mduyk">
+        </div>
+        <div class="field">
+            <div class="field-label">CONTACT_ANSWER</div>
+            <input type="text" id="contact-answer" value="Liên hệ MDUY:&#10;• Zalo: 0328033706&#10;• Telegram: @mduyk">
+        </div>
+    </div>
+
+    <button id="encrypt-btn">🔐 MÃ HOÁ TẤT CẢ</button>
 
     <div class="status" id="status">Sẵn sàng</div>
 
     <div class="card" id="output-card" style="display:none;">
-        <div class="label">✅ CODE ĐÃ MÃ HOÁ</div>
-        <textarea id="output" readonly spellcheck="false"></textarea>
+        <div class="label">✅ CODE ĐÃ MÃ HOÁ - DÁN VÀO ĐẦU TOOL</div>
+        <div class="code-output" id="output"></div>
         <button class="copy-btn" id="copy-btn">📋 COPY CODE</button>
-        <button class="download-btn" id="download-btn">💾 TẢI FILE .user.js</button>
     </div>
 </div>
 
@@ -139,30 +154,19 @@ button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
         el.className = 'status' + (type ? ' ' + type : '');
     }
 
-    // ===== CHỌN FILE =====
-    $('file-input').addEventListener('change', function(e) {
-        var file = e.target.files[0];
-        if (!file) return;
-        var reader = new FileReader();
-        reader.onload = function(ev) {
-            $('input').value = ev.target.result;
-            $('file-name').textContent = '✅ ' + file.name + ' (' + (file.size / 1024).toFixed(1) + 'KB)';
-            $('file-name').style.display = 'block';
-            $('file-wrapper').classList.add('has-file');
-            $('clear-file-btn').style.display = 'block';
-            setStatus('✅ Đã đọc file: ' + file.name, 'success');
-        };
-        reader.readAsText(file);
-    });
-
-    $('clear-file-btn').onclick = function() {
-        $('file-input').value = '';
-        $('input').value = '';
-        $('file-name').style.display = 'none';
-        $('file-wrapper').classList.remove('has-file');
-        $('clear-file-btn').style.display = 'none';
-        setStatus('Đã xoá file', 'success');
-    };
+    // ===== MÃ HOÁ CHUỖI =====
+    function encryptString(str) {
+        if (!str) return '';
+        // Base64 encode với hỗ trợ Unicode
+        var encoded = btoa(unescape(encodeURIComponent(str)));
+        // Chia thành chunks 40 ký tự để nhìn rối mắt
+        var chunks = [];
+        for (var i = 0; i < encoded.length; i += 40) {
+            chunks.push(encoded.substr(i, 40));
+        }
+        // Reverse order để khó đọc
+        return chunks.reverse().join('');
+    }
 
     // ===== MÃ HOÁ =====
     $('encrypt-btn').onclick = function() {
@@ -171,57 +175,51 @@ button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
         setStatus('⏳ Đang mã hoá...', 'loading');
 
         try {
-            var input = $('input').value.trim();
-            if (!input) {
-                setStatus('❌ Chưa có code!', 'error');
-                btn.disabled = false;
-                return;
-            }
+            var groqKey = $('groq-key').value.trim();
+            var vipPass = $('vip-pass').value.trim();
+            var vnPrompt = $('vn-prompt').value.trim();
+            var mduyAns = $('mduy-answer').value.trim();
+            var creatorAns = $('creator-answer').value.trim();
+            var contactAns = $('contact-answer').value.trim();
 
-            // Tách header và body
-            var header = '';
-            var body = input;
-            var match = input.match(/\/\/ ==UserScript==[\s\S]*?\/\/ ==\/UserScript==/);
-            if (match) {
-                header = match[0];
-                body = input.replace(header, '').trim();
-            } else {
-                header = '// ==UserScript==\n// @name         Tool\n// @namespace    http://tampermonkey.net/\n// @version      10.0\n// @description  Tool\n// @author       MDUY\n// @match        *://*/*\n// @grant        GM_xmlhttpRequest\n// @grant        GM_setValue\n// @grant        GM_getValue\n// @connect      api.groq.com\n// @connect      api.ocr.space\n// @run-at       document-idle\n// ==/UserScript==';
-            }
+            var encGroq = encryptString(groqKey);
+            var encVip = encryptString(vipPass);
+            var encPrompt = encryptString(vnPrompt);
+            var encMduy = encryptString(mduyAns);
+            var encCreator = encryptString(creatorAns);
+            var encContact = encryptString(contactAns);
 
-            // Mã hoá Base64 (đơn giản - chỉ để khó đọc, không làm hỏng code)
-            // Dùng encodeURIComponent để hỗ trợ ký tự Unicode
-            var encoded = btoa(unescape(encodeURIComponent(body)));
+            var output = [
+'// ============================================',
+'// 🔐 ENCRYPTED DATA - DÁN VÀO ĐẦU TOOL',
+'// ============================================',
+'(function() {',
+'    "use strict";',
+'    ',
+'    // Hàm giải mã (không xoá)',
+'    window._dec = function(s) {',
+'        if (!s) return "";',
+'        try {',
+'            var r = s.match(/.{1,40}/g).reverse().join("");',
+'            return decodeURIComponent(escape(atob(r)));',
+'        } catch(e) { return ""; }',
+'    };',
+'    ',
+'    // Giải mã các giá trị',
+'    window._GROQ_KEY = _dec("' + encGroq + '");',
+'    window._VIP_PASS = _dec("' + encVip + '");',
+'    window._VN_PROMPT = _dec("' + encPrompt + '");',
+'    window._MDUY_ANSWER = _dec("' + encMduy + '");',
+'    window._CREATOR_ANSWER = _dec("' + encCreator + '");',
+'    window._CONTACT_ANSWER = _dec("' + encContact + '");',
+'    ',
+'})();'
+            ].join('\n');
 
-            // Chia thành các chunk nhỏ để không lộ cấu trúc
-            var chunks = [];
-            var chunkSize = 500;
-            for (var i = 0; i < encoded.length; i += chunkSize) {
-                chunks.push(encoded.substr(i, chunkSize));
-            }
-
-            // Tạo wrapper giải mã đơn giản - CHẮC CHẮN CHẠY
-            var chunkArrayStr = chunks.map(function(c) { return "'" + c + "'"; }).join(',');
-
-            var output = header + '\n\n' +
-'(function(){\n' +
-'    "use strict";\n' +
-'    try {\n' +
-'        var _c = [' + chunkArrayStr + '];\n' +
-'        var _s = _c.join("");\n' +
-'        var _d = decodeURIComponent(escape(atob(_s)));\n' +
-'        (0, eval)(_d);\n' +
-'    } catch(e) {\n' +
-'        console.error("[Tool] Error:", e);\n' +
-'    }\n' +
-'})();\n';
-
-            $('output').value = output;
+            $('output').textContent = output;
             $('output-card').style.display = 'block';
 
-            var inputKB = (new Blob([input]).size / 1024).toFixed(1);
-            var outputKB = (new Blob([output]).size / 1024).toFixed(1);
-            setStatus('✅ Xong! Input: ' + inputKB + 'KB → Output: ' + outputKB + 'KB', 'success');
+            setStatus('✅ Mã hoá xong! Copy code bên dưới.', 'success');
             btn.disabled = false;
 
         } catch(err) {
@@ -233,39 +231,25 @@ button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
     // ===== COPY =====
     $('copy-btn').onclick = function() {
-        var ta = $('output');
-        ta.select();
-        ta.setSelectionRange(0, 999999);
+        var text = $('output').textContent;
         try {
-            navigator.clipboard.writeText(ta.value).then(function() {
+            navigator.clipboard.writeText(text).then(function() {
                 $('copy-btn').textContent = '✅ ĐÃ COPY!';
                 setTimeout(function() { $('copy-btn').textContent = '📋 COPY CODE'; }, 1500);
             });
         } catch(e) {
+            var ta = document.createElement('textarea');
+            ta.value = text;
+            document.body.appendChild(ta);
+            ta.select();
             document.execCommand('copy');
+            document.body.removeChild(ta);
             $('copy-btn').textContent = '✅ ĐÃ COPY!';
             setTimeout(function() { $('copy-btn').textContent = '📋 COPY CODE'; }, 1500);
         }
     };
 
-    // ===== DOWNLOAD =====
-    $('download-btn').onclick = function() {
-        var content = $('output').value;
-        if (!content) return;
-        var blob = new Blob([content], { type: 'text/javascript' });
-        var url = URL.createObjectURL(blob);
-        var a = document.createElement('a');
-        a.href = url;
-        a.download = 'tool-' + Date.now() + '.user.js';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        $('download-btn').textContent = '✅ ĐÃ TẢI!';
-        setTimeout(function() { $('download-btn').textContent = '💾 TẢI FILE .user.js'; }, 1500);
-    };
-
-    setStatus('Sẵn sàng — Chọn file hoặc dán code');
+    setStatus('Sẵn sàng — Điền thông tin rồi nhấn MÃ HOÁ');
 })();
 </script>
 
